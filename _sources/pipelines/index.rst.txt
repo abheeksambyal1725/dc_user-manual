@@ -1,0 +1,142 @@
+Previous: :ref:`dc_assets`
+
+
+.. _pipelines:
+
+############
+3. Pipelines
+############
+
+.. _what_are_pipelines:
+
+3.1. What are DeepCortex (DC) Pipelines?
+========================================
+
+DeepCortex Pipeline is 1 or more DC Operators stitched together to perform a set of tasks
+either sequentially or in a task-parallel manner based on the construed DAG (Directed Acyclic Graph).
+In DeepCortex, the Pipelines are created from either the Compose Module (Canvas), or from the Code Moule (IDE).
+
+.. _how_to_construct_pipelines:
+
+3.2 How to construct Pipelines in DeepCortex?
+=============================================
+In DeepCortex, users can construct/compose pipelines using 1 of 2 methods:
+
+a. From Compose/ Canvas
+=======================
+To construct a new pipeline from canvas, click on the “Create Pipeline” button as shown in the screenshot below.
+
+.. figure:: images/create.png
+
+Once a new pipeline is constructed, user can start pulling the operators from the drop down in the left panel,
+onto the main pipeline canvas. The operators in the left panel are organized by “Operator Categories”.
+User can click on any Operator Category to see the list of Operators under the selected Category.
+The number depicted next to each Operator category represents the count of unique operators in that category.
+The user can also use the search feature to search for an operator by name.
+Below screenshot shows the list of Operators under the Operator Category “Transformers”.
+
+.. figure:: images/transformers_category.png
+
+As shown in the below screenshot, users can find more information about the Operators
+(version, description, expected inputs, expected outputs, configuration parameters) by clicking on the info
+icon shown next to the operator name or by clicking on the icon on the operator interface
+when user drags the operator on to the canvas.
+
+.. figure:: images/operator_info.png
+
+To use an Operator in the pipeline, drag the operator from the left panel onto the main Canvas workspace.
+Every Operator in DeepCortex will have 3 components (as shown in the below screenshot):
+
+.. figure:: images/canvas_with_operators.png
+
+1. one or more Input(s) – to connect to upstream operators
+    a. input(s) marked in red is a “required” input(s)
+    b. input(s) marked in blue are “optional” input(s)
+
+2. one or more Output(s) – to connect to downstream operators
+
+3. control options – to control/view various options for the operators
+    a. information: provides additional information about operator (version, input definition, output definition, parameter definition)
+    b. configuration parameter: allows users to view/edit default configuration parameters for the operator
+    c. delete: remove operator from canvas
+
+To learn more about Configuring the parameters of an operator, please refer to :ref:`how_to_configure_operators_in_pipelines` section.
+
+Operators can be connected to each other by following the below steps:
+
+1. Click on the output node of the Operator you want to connect from
+
+2. Holding down the mouse button, drag your mouse to one of the input nodes of the Operator you want to connect to.
+   This will create a “connector” between the two operators as shown in the below screenshot.
+
+3. Release the mouse button, after the connector reaches the input node of downstream operator
+
+.. figure:: images/connecting_operators.png
+
+
+b. From Code (using Notebooks)
+=======================
+.. container:: fillme
+
+    TODO: add description
+
+
+Going from Code view of Pipeline to Visual Pipeline
+===================================================
+
+.. container:: fillme
+
+    TODO: add description
+
+.. _how_to_configure_operators_in_pipelines:    
+
+3.3 How to configure Operators in a Pipeline?
+=============================================
+
+Clicking the operator configuration control on the Operator icon brings up the configuration pop-up,
+which allows users to view/modify any of the operator’s configuration parameters.
+The below screenshot shows the configuration pop-up for an example operator.
+For additional information on the configuration parameters, users can also hover over the (?) icon next
+to each parameter name in the pop-up.
+
+.. figure:: images/operator_parameters.png
+
+.. _how_to_execute_pipelines: 
+
+3.4 How to execute Pipelines in DeepCortex (Lab Module)?
+========================================================
+
+In DeepCortex, pipelines can be executed in 1 of 2 modes:
+
+a. Non-Interactive Mode 
+=======================
+In this mode, the entire pipeline is executed as a single job.
+To run the pipeline, user has to click the “RUN” button on the top panel, as shown in the below screenshot.
+
+.. figure:: images/run_pipeline.png
+
+b. Interactive Mode
+===================
+In this mode, the user can pick and choose which operator(s) should be executed and
+only those are executed as a single job. When a user chooses to execute a single operator,
+all the upstream operators that are directly or indirectly connected to the selected operator will also get executed.
+
+
+.. container:: fillme
+
+    TODO: add a section that shows “Best Practice Approach for Model Building: Rapid Experimentation”
+
+Each pipeline that is Run/executed in DeepCortex (either in Interactive or Non-Interactive mode) results
+in a new asset type called “Experiment”.
+
+All Experiments (Running, Completed, Cancelled) can be viewed in the “LAB” module of DeepCortex.
+Once an Experiment completes, user can see the results of the Experiment by clicking on the “Results” module
+of the Experiment in the main panel. User can also refer to the “Pipeline” that was executed as part of
+the Experiment by clicking the “Pipeline” module for the Experiment. Below screenshots shows the Pipeline
+and Results module for a sample Experiment that completed successfully.
+
+.. figure:: images/results.png
+
+
+
+Next: :ref:`dc_operators`

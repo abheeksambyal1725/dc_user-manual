@@ -1,0 +1,40 @@
+.. _what_is_deepcortex:
+
+###########################
+1. What is DeepCortex (DC)?
+###########################
+
+DeepCortex is an open source platform for doing collaborative Data Management & AI/ML anywhere you want. It solves the scalability, accessibility, and rapid obsolescence problem of AI that results from the runaway costs when AI must be performed at enterprise scale and each AI model loses efficacy due to the blistering pace of algorithm innovation.
+
+Whether your data is trapped in silos or you’re generating data at the edge, DeepCortex gives you the flexibility to create AI and data engineering pipelines wherever your data is. And you can share your AI, Data, and Pipelines with anyone anywhere. With DeepCortex, you can achieve newfound agility to effortlessly move between compute environments, while all your data and your work replicates automatically to wherever you want
+
+DeepCortex empowers you with a large inventory of building blocks from which you can stitch together the custom AI and Data Engineering pipelines you need. Rapidly assemble and test many different pipelines to create the AI you need. Turn your data into AI with near-zero effort and cost. And since DeepCortex is an open platform, newer cutting-edge AI building blocks that are emerging every day put right at your fingertips.
+
+.. _who_is_dc_for:
+
+1.1 Who is DeepCortex (DC) for: Key User Personas?
+==================================================
+
+DeepCortex has been designed, architected, and built keeping in mind the following user personas:
+
+1. AI Consumers: use and execute custom AI models with insane ease via drag-and-drop
+2. AI Producers: train and manufacture Custom AI models using off-the-shelf Pipelines
+3. Pipeline Authors: create off-the-shelf Pipelines using off-the-shelf Operators
+4. Operator Authors: create off-the-shelf Operators from off-the-shelf Libraries like TensorFlow, PyTorch,
+   and DeepCortex’s own set of powerful API’s and cutting edge algorithms
+
+.. _what_are_diff_modules:
+
+1.2 What are the different modules within DeepCortex?
+=====================================================
+
+1. Library: An Asset Management Module where users can manage all their assets. For more information on DeepCortex Assets, see :ref:`dc_assets` section
+2. Compose: A Pipeline Compositon Module where users can construct their ETL, Data Engineering, and ML Pipelines. For more information on DeepCortex Pipelines, see :ref:`pipelines` section
+3. Lab: A Pipeline Execution and Experimentation Module where users can run / execute their Pipelines
+4. Code: An IDE envrionment where users can write their own custom code, e.g. create and publish custom operators for use in DeepCortex Pipelines. For more information on DeepCortex Operators, see :ref:`dc_operators` section
+
+
+
+
+
+Next: :ref:`dc_assets`

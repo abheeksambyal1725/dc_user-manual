@@ -1,0 +1,154 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>7. Python DSL to work with DeepCortex &#8212; user-manual  documentation</title>
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <script src="../_static/language_data.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <p>Previous: <a class="reference internal" href="../models/index.html#models"><span class="std std-ref">6. Working with ML Models</span></a></p>
+<div class="section" id="python-dsl-to-work-with-deepcortex">
+<span id="dsl"></span><h1>7. Python DSL to work with DeepCortex<a class="headerlink" href="#python-dsl-to-work-with-deepcortex" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="dsl-overview">
+<h2>DSL Overview<a class="headerlink" href="#dsl-overview" title="Permalink to this headline">¶</a></h2>
+<p>DC Lib provides a set of convenient methods for DeepCortex API. The methods have well documented code.
+At the same time DC Lib can be used just like any python package: in some other Python package (as a library),
+imported in a python program and executed from the command line or a Jupyter notebook.</p>
+</div>
+<div class="section" id="installation">
+<span id="dsl-installation"></span><h2>7.1 Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h2>
+<p>First it is needed to get a URL of storage which is used to publish <strong>dclib</strong>. so contact support.</p>
+<p>Install dclib of a specific version (<em>~=</em> is used to get the latest version with fixes):</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ pip install dclib~<span class="o">=</span>&lt;release-version&gt; --extra-index-url <span class="s2">&quot;&lt;storage_url&gt;&quot;</span>
+</pre></div>
+</div>
+<p>For future reference you can:</p>
+<ul class="simple">
+<li><p>set the url via command line if you haven’t set up <em>extra-index-url</em> before</p></li>
+</ul>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ pip config <span class="nb">set</span> install.extra-index-url <span class="s1">&#39;&lt;storage_url&gt;&#39;</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><p>configure the url in <strong>pip.conf</strong> by adding a new <em>extra-index-url</em></p></li>
+</ul>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="o">[</span>install<span class="o">]</span>
+extra-index-url <span class="o">=</span> &lt;previously <span class="nb">set</span> urls&gt;
+                  &lt;storage_url&gt;
+<span class="nv">timeout</span> <span class="o">=</span> <span class="m">20</span>
+</pre></div>
+</div>
+<p><strong>On Unix:</strong> by default pip looks into <em>$HOME/.config/pip/pip.conf</em> for configuration data.
+If you have set the conf and yet if the pip conf is not being picked please check
+that <strong>pip.conf</strong> is in the right home directory for the user. e.g. <em>/root</em> or <em>/home/user</em></p>
+<div class="fillme docutils container">
+<p>TODO: describe other possible options to install via pip or/and conda command</p>
+</div>
+</div>
+<div class="section" id="usage">
+<span id="dsl-usage"></span><h2>7.2 Usage<a class="headerlink" href="#usage" title="Permalink to this headline">¶</a></h2>
+<p>If you have an account on DeepCortex and want to gain access to DeepCortex library,
+you need to sign up for the account:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">deepcortex</span>
+<span class="n">deepcortex</span><span class="o">.</span><span class="n">login</span><span class="p">(</span><span class="s1">&#39;user&#39;</span><span class="p">,</span> <span class="s1">&#39;password&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>If you have an account on custom DeepCortex installation and want to gain access to your assets there,
+pass the installation URL as <em>deepcortex_url</em> keyword parameter in <em>deepcortex.login()</em> method:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">deepcortex</span>
+<span class="n">deepcortex</span><span class="o">.</span><span class="n">login</span><span class="p">(</span><span class="s1">&#39;user&#39;</span><span class="p">,</span> <span class="s1">&#39;password&#39;</span><span class="p">,</span>
+                 <span class="n">deepcortex_url</span><span class="o">=</span><span class="s2">&quot;http://&lt;custom_deepcortex_url&gt;:9000/&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Also check <a class="reference internal" href="../dc-projects/index.html#what-are-package-repositories"><span class="std std-ref">4.5 DC Packages Repository</span></a> section to use custom operators or some other code from user packages</p>
+</div>
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../index.html">user-manual</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2020, Abheek Sambyal.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.0.3</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="../_sources/dc-lib/index.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

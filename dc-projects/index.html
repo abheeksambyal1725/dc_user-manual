@@ -1,0 +1,199 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>4. DeepCortex (DC) Operators &#8212; user-manual  documentation</title>
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <script src="../_static/language_data.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <p>Previous: <a class="reference internal" href="../pipelines/index.html#pipelines"><span class="std std-ref">3. Pipelines</span></a></p>
+<div class="section" id="deepcortex-dc-operators">
+<span id="dc-operators"></span><h1>4. DeepCortex (DC) Operators<a class="headerlink" href="#deepcortex-dc-operators" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="what-are-deepcortex-dc-operators">
+<span id="what-are-dc-operators"></span><h2>4.1 What are DeepCortex (DC) Operators?<a class="headerlink" href="#what-are-deepcortex-dc-operators" title="Permalink to this headline">¶</a></h2>
+<p>Operators in DeepCortex are the building blocks of Pipelines.
+Operators are essentially functions designed to accept specific input(s), execute a specific set of instructions,
+and generate specific output(s). These functions (set of instructions) when wrapped inside DeepCortex’s DSL become
+an Operator that can be then used to construct a pipeline in DeepCortex.
+DeepCortex ships out with a repository of different Operators. In addition, users can also build their own custom Operators, as specified in <a class="reference internal" href="../operators/index.html#design-operators"><span class="std std-ref">5. Designing Your Own Operators</span></a> section.</p>
+</div>
+<div class="section" id="what-are-deepcortex-dc-projects">
+<span id="what-are-dc-projects"></span><h2>4.2 What are DeepCortex (DC) Projects?<a class="headerlink" href="#what-are-deepcortex-dc-projects" title="Permalink to this headline">¶</a></h2>
+<p>DC Projects are essential to creating Operators in DeepCortex. They are a collection of 1 or more Operator code that must meet the following requirements before
+the Operators can be Build or Published:</p>
+<ol class="arabic simple">
+<li><p>Have a requirements.txt file: The project should have a “requirements.txt” file in the root of the project.
+This file is used to list down all required custom python packages that need to be installed as a pre-requisite
+for the Operators. These required packages should be either publicly available or another existing DC project
+package.
+Below screenshot shows a sample requirements.txt file</p></li>
+</ol>
+<div class="figure align-default">
+<img alt="../_images/requirements_txt.png" src="../_images/requirements_txt.png" />
+</div>
+<ol class="arabic simple" start="2">
+<li><p>Have at least one python module (<cite>_init_.py</cite>):
+The project should have at least 1 python module (folder with <cite>__init__.py</cite> file) in the root of the project.
+If not, the build process will fail with the error “The project has no modules to package”
+.Note: user can create multiple python modules along with the base module or within it.
+Below screenshot shows the use of _init_ python file that is required in ALL the folders that include the
+operator code inside.</p></li>
+<li><p>Operator Code wrapped inside DeepCortex DSL: for more details on DeepCortex DSL refer to <a class="reference internal" href="../dc-lib/index.html#dsl"><span class="std std-ref">7. Python DSL to work with DeepCortex</span></a> section.</p></li>
+</ol>
+</div>
+<div class="section" id="build-publish">
+<h2>Build &amp; Publish<a class="headerlink" href="#build-publish" title="Permalink to this headline">¶</a></h2>
+<p><strong>Build</strong> option checks the operator(s) within a DC project for …???.. and makes the operator(s) available
+for the user to use in their pipelines via IDE or Canvas.
+To learn more about developing Pipelines, refer “How to Create Pipelines” section.</p>
+<p>The below screenshot shows the “Build” option in DeepCortex.</p>
+<div class="figure align-default">
+<img alt="../_images/build.png" src="../_images/build.png" />
+</div>
+<p><strong>Publish</strong> option allows users to not only Build the Operator package,
+but also assign the Operators to predefined Operator Categories and makes it available to not
+just package owner but also to all the other users of DeepCortex.
+Once Published, the Operators are now available to all users to use in their pipelines via IDE or Canvas.
+To learn more about developing Pipeline, refer “How to Create Pipelines” section.
+The below screenshots show the “Publish” option in DeepCortex and the process of assigning Operators to specific Operator Category.</p>
+<div class="figure align-default">
+<img alt="../_images/publish.png" src="../_images/publish.png" />
+</div>
+</div>
+<div class="section" id="how-to-create-operators-in-deepcortex">
+<span id="how-to-create-operators"></span><h2>4.3 How to create Operators in DeepCortex?<a class="headerlink" href="#how-to-create-operators-in-deepcortex" title="Permalink to this headline">¶</a></h2>
+<p>Creating an Operator inside DeepCortex is a 3 step process:</p>
+<p>Step 1: Create a DC Project or Edit existing DC Project as shown in the below screenshot.</p>
+<div class="figure align-default">
+<img alt="../_images/create_project.png" src="../_images/create_project.png" />
+</div>
+<p>Step 2: Add/Edit the Operator(s) code inside DC projects and organize it based on the specific requirements.</p>
+<p>Step 3a: “Build” or “Publish” Project that contains the Operator code resulting in a Package</p>
+<p>Step 3b: “Build” or “Publish” existing published/build Project.</p>
+<p>Operator authors can view previously Build or Published DC projects by going to the PACKAGE LIST.
+Clicking individual Published/Build package will also show the list of Operators that are part of the selected package,
+as shown in the below screenshot. Users can modify existing operator code and re-Build or re-Publish
+the project to update their existing Operators, OR add new operators from existing projects, by following step 3a.</p>
+<div class="figure align-default">
+<img alt="../_images/view_build_package.png" src="../_images/view_build_package.png" />
+</div>
+</div>
+<div class="section" id="how-to-use-operators-in-deepcortex">
+<span id="how-to-use-operators"></span><h2>4.4 How to use Operators in DeepCortex?<a class="headerlink" href="#how-to-use-operators-in-deepcortex" title="Permalink to this headline">¶</a></h2>
+<p>Operators are used in the construction of DC asset Pipelines. For more information on how to construct Pipelines,
+please refer to the <a class="reference internal" href="../pipelines/index.html#pipelines"><span class="std std-ref">3. Pipelines</span></a> section.</p>
+</div>
+<div class="section" id="dc-packages-repository">
+<span id="what-are-package-repositories"></span><h2>4.5 DC Packages Repository<a class="headerlink" href="#dc-packages-repository" title="Permalink to this headline">¶</a></h2>
+<p>After <strong>publishing</strong> a DC Project its package can be installed like any python package. To do so, you need to:</p>
+<ul class="simple">
+<li><p>have a DeepCortex account</p></li>
+<li><p>know a DeepCortex URL</p></li>
+<li><p><strong>[recommended]</strong> use a <em>virtual environment</em> while working with <cite>dclib</cite>.</p></li>
+<li><p>customize your <strong>pip.conf</strong> to point to a DeepCortex repository:</p></li>
+</ul>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ pip config <span class="nb">set</span> install.extra-index-url <span class="se">\</span>
+    <span class="s2">&quot;http[s]://&lt;username&gt;:&lt;password&gt;@&lt;deepcortex_host&gt;:&lt;deepcortex_port&gt;/\</span>
+<span class="s2">    baile/v2.0/packages-index/&quot;</span>
+</pre></div>
+</div>
+<p>If you have a custom DeepCortex installation and DeepCortex host does not have valid or any HTTPS:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ pip config <span class="nb">set</span> install.trusted-host <span class="s2">&quot;&lt;deepcortex_host&gt;:&lt;deepcortex_port&gt;&quot;</span>
+</pre></div>
+</div>
+<p>Then to install a published package use:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ pip install &lt;package_name&gt;<span class="o">[==</span>&lt;package_version&gt;<span class="o">]</span>
+</pre></div>
+</div>
+<p>Next: <a class="reference internal" href="../operators/index.html#design-operators"><span class="std std-ref">5. Designing Your Own Operators</span></a></p>
+</div>
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../index.html">user-manual</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2020, Abheek Sambyal.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.0.3</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="../_sources/dc-projects/index.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

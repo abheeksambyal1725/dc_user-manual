@@ -1,0 +1,155 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>DeepCortex User Manual &#8212; user-manual  documentation</title>
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script src="_static/language_data.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <img alt="_images/logo.png" class="align-center" src="_images/logo.png" />
+<div class="section" id="deepcortex-user-manual">
+<h1>DeepCortex User Manual<a class="headerlink" href="#deepcortex-user-manual" title="Permalink to this headline">¶</a></h1>
+<div class="line-block">
+<div class="line">Release 2.2.8</div>
+<div class="line">Apr 6, 2020</div>
+</div>
+<div class="section" id="table-of-content">
+<h2>Table of Content<a class="headerlink" href="#table-of-content" title="Permalink to this headline">¶</a></h2>
+<dl>
+<dt><a class="reference internal" href="overview.html#what-is-deepcortex"><span class="std std-ref">1. What is DeepCortex (DC)?</span></a></dt><dd><p><a class="reference internal" href="overview.html#who-is-dc-for"><span class="std std-ref">1.1 Who is DeepCortex (DC) for: Key User Personas?</span></a></p>
+<p><a class="reference internal" href="overview.html#what-are-diff-modules"><span class="std std-ref">1.2 What are the different modules within DeepCortex?</span></a></p>
+</dd>
+<dt><a class="reference internal" href="library/index.html#dc-assets"><span class="std std-ref">2. DeepCortex (DS) Assets</span></a></dt><dd><p><a class="reference internal" href="library/index.html#dc-asset-types"><span class="std std-ref">2.1 What are different Asset Types in DeepCortex?</span></a></p>
+<p><a class="reference internal" href="library/index.html#upload-assets"><span class="std std-ref">2.2 How to upload Assets to DeepCortex?</span></a></p>
+<p><a class="reference internal" href="library/index.html#share-assets"><span class="std std-ref">2.3 How to share Assets in DeepCortex?</span></a></p>
+</dd>
+<dt><a class="reference internal" href="pipelines/index.html#pipelines"><span class="std std-ref">3. Pipelines</span></a></dt><dd><p><a class="reference internal" href="pipelines/index.html#what-are-pipelines"><span class="std std-ref">3.1. What are DeepCortex (DC) Pipelines?</span></a></p>
+<p><a class="reference internal" href="pipelines/index.html#how-to-construct-pipelines"><span class="std std-ref">3.2 How to construct Pipelines in DeepCortex?</span></a></p>
+<p><a class="reference internal" href="pipelines/index.html#how-to-configure-operators-in-pipelines"><span class="std std-ref">3.3 How to configure Operators in a Pipeline?</span></a></p>
+<p><a class="reference internal" href="pipelines/index.html#how-to-execute-pipelines"><span class="std std-ref">3.4 How to execute Pipelines in DeepCortex (Lab Module)?</span></a></p>
+</dd>
+<dt><a class="reference internal" href="dc-projects/index.html#dc-operators"><span class="std std-ref">4. DeepCortex (DC) Operators</span></a></dt><dd><p><a class="reference internal" href="dc-projects/index.html#what-are-dc-operators"><span class="std std-ref">4.1 What are DeepCortex (DC) Operators?</span></a></p>
+<p><a class="reference internal" href="dc-projects/index.html#what-are-dc-projects"><span class="std std-ref">4.2 What are DeepCortex (DC) Projects?</span></a></p>
+<p><a class="reference internal" href="dc-projects/index.html#how-to-create-operators"><span class="std std-ref">4.3 How to create Operators in DeepCortex?</span></a></p>
+<p><a class="reference internal" href="dc-projects/index.html#how-to-use-operators"><span class="std std-ref">4.4 How to use Operators in DeepCortex?</span></a></p>
+<p><a class="reference internal" href="dc-projects/index.html#what-are-package-repositories"><span class="std std-ref">4.5 DC Packages Repository</span></a></p>
+</dd>
+<dt><a class="reference internal" href="operators/index.html#design-operators"><span class="std std-ref">5. Designing Your Own Operators</span></a></dt><dd><p><a class="reference internal" href="operators/index.html#how-to-design-operators"><span class="std std-ref">5.1 Operator Design</span></a></p>
+<dl>
+<dt><a class="reference internal" href="operators/index.html#publish-decorator"><span class="std std-ref">5.2 &#64;publish decorator</span></a></dt><dd><p><a class="reference internal" href="operators/index.html#operator-parameters"><span class="std std-ref">5.2.1 Operator parameters</span></a></p>
+<p><a class="reference internal" href="operators/index.html#operator-input-output"><span class="std std-ref">5.2.2 Operator inputs and outputs</span></a></p>
+</dd>
+</dl>
+<p><a class="reference internal" href="operators/index.html#operator-summary"><span class="std std-ref">5.3 Operator Summaries</span></a></p>
+<dl>
+<dt><a class="reference internal" href="operators/index.html#operator-enhancements"><span class="std std-ref">5.4 Operator enhancements</span></a></dt><dd><p><a class="reference internal" href="operators/index.html#how-to-write-custom-component"><span class="std std-ref">5.4.1 How to write your own custom component</span></a></p>
+<p><a class="reference internal" href="operators/index.html#how-to-specify-custom-component-in-operator"><span class="std std-ref">5.4.2 How to specify a custom component in the operator</span></a></p>
+<p><a class="reference internal" href="operators/index.html#custom-component"><span class="std std-ref">5.4.3 Custom operator components</span></a></p>
+<p><a class="reference internal" href="operators/index.html#custom-parameter-component"><span class="std std-ref">5.4.4 Custom parameter components</span></a></p>
+<p><a class="reference internal" href="operators/index.html#custom-eda-component"><span class="std std-ref">5.4.5 Custom EDA components</span></a></p>
+<p><a class="reference internal" href="operators/index.html#inspections"><span class="std std-ref">5.4.6 Inspections</span></a></p>
+<dl class="simple">
+<dt><a class="reference internal" href="operators/index.html#builtin-enhacement"><span class="std std-ref">5.4.7 Builtin operator enhancements</span></a></dt><dd><p><a class="reference internal" href="operators/index.html#tabular-charting"><span class="std std-ref">5.4.7.1 Tabular charting</span></a></p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd>
+<dt><a class="reference internal" href="models/index.html#models"><span class="std std-ref">6. Working with ML Models</span></a></dt><dd><p><a class="reference internal" href="models/index.html#tabular-models"><span class="std std-ref">6.1 Tabular Models</span></a></p>
+<p><a class="reference internal" href="models/index.html#cv-models"><span class="std std-ref">6.2 Computer Vision (CV) Models</span></a></p>
+</dd>
+<dt><a class="reference internal" href="dc-lib/index.html#dsl"><span class="std std-ref">7. Python DSL to work with DeepCortex</span></a></dt><dd><p><a class="reference internal" href="dc-lib/index.html#dsl-installation"><span class="std std-ref">7.1 Installation</span></a></p>
+<p><a class="reference internal" href="dc-lib/index.html#dsl-usage"><span class="std std-ref">7.2 Usage</span></a></p>
+</dd>
+</dl>
+</div>
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="#">user-manual</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="#">Documentation overview</a><ul>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2020, Abheek Sambyal.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.0.3</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="_sources/index.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

@@ -1,0 +1,298 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>6. Working with ML Models &#8212; user-manual  documentation</title>
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <script src="../_static/language_data.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <p>Previous: <a class="reference internal" href="../operators/index.html#design-operators"><span class="std std-ref">5. Designing Your Own Operators</span></a></p>
+<div class="section" id="working-with-ml-models">
+<span id="models"></span><h1>6. Working with ML Models<a class="headerlink" href="#working-with-ml-models" title="Permalink to this headline">¶</a></h1>
+<p>In DeepCortex, Models are generated when pipelines with specific ML Operators are executed. The are different types of models within DeepCortex, and the following sections provide more information about how Operators that generate a Model should be designed within DeepCortex:</p>
+<div class="section" id="tabular-models">
+<span id="id1"></span><h2>6.1 Tabular Models<a class="headerlink" href="#tabular-models" title="Permalink to this headline">¶</a></h2>
+<p>The base class for tabular models is
+<cite>deepcortex.tabular.base_tabular_model.BaseTabularModel</cite>.</p>
+<p>In order to derive it, users have to implement the following methods and
+properties:</p>
+<ul class="simple">
+<li><p><strong>classes</strong> - property that returns list of classes that the model can predict.</p></li>
+<li><p><strong>predict_one</strong> - produce a prediction based on a single table row.</p></li>
+<li><p><strong>predictors</strong> - property that returns a list of columns significant
+for prediction. Each column should be represented as <a class="reference internal" href="#tabularcolumnmeta-class">TabularColumnMeta class</a>
+instance.</p></li>
+<li><p><strong>prediction_result_meta</strong> - property that returns a descriptor (
+represented as <a class="reference internal" href="#tabularcolumnmeta-class">TabularColumnMeta class</a> instance) of the column
+that would contain a prediction.</p></li>
+<li><p><strong>get_state_dict</strong> - method used for saving model state into storage. It
+should return any python structure with primitives (list/set/dict of
+lists/sets/dicts or scalars, like integer/float/boolean/none).</p></li>
+<li><p><strong>set_state_dict</strong> - method used for loading model state. Accept a structure
+of the same type as <strong>get_state_dict</strong> returns.</p></li>
+</ul>
+<p>Also there is a method <strong>predict</strong> in the class, that produces a prediction
+based on the entire dataset. A default implementation iterates over the dataset
+using <strong>predict_one</strong> and returns a pandas <em>DataFrame</em> with a single column
+containing the results of <strong>predict_one</strong>. It accepts two parameters:</p>
+<ul class="simple">
+<li><p><em>dataset</em> - a pandas <em>DataFrame</em> with the entire input table.</p></li>
+<li><p><em>mappings</em> - a dictionary with column names mapping. Key - column name
+of the input table, value - alias for that column from <strong>predictors</strong>.</p></li>
+</ul>
+</div>
+<div class="section" id="tabularcolumnmeta-class">
+<h2>TabularColumnMeta class<a class="headerlink" href="#tabularcolumnmeta-class" title="Permalink to this headline">¶</a></h2>
+<p>Class <cite>TabularColumnMeta</cite> from <cite>deepcortex.tabular.tabular_column_meta</cite> module
+is a descriptor for a table column. The definition for this class as follows:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">NamedTuple</span>
+<span class="kn">from</span> <span class="nn">deepcortex.internal_api.baile.model.table</span> <span class="kn">import</span> \
+    <span class="n">TableColumnVariableType</span><span class="p">,</span> <span class="n">TableColumnDataType</span>
+
+
+<span class="k">class</span> <span class="nc">TabularColumnMeta</span><span class="p">(</span><span class="n">NamedTuple</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Table column definition, used to store predictions usually.&quot;&quot;&quot;</span>
+
+    <span class="n">name</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">display_name</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">data_type</span><span class="p">:</span> <span class="n">TableColumnDataType</span>
+    <span class="n">variable_type</span><span class="p">:</span> <span class="n">TableColumnVariableType</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="example-of-the-tabular-model-class">
+<h2>Example of the Tabular Model class<a class="headerlink" href="#example-of-the-tabular-model-class" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">List</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Any</span>
+<span class="kn">import</span> <span class="nn">magictools</span> <span class="k">as</span> <span class="nn">mt</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">from</span> <span class="nn">deepcortex.tabular.base_tabular_model</span> <span class="kn">import</span> <span class="n">BaseTabularModel</span>
+<span class="kn">from</span> <span class="nn">deepcortex.tabular.tabular_column_meta</span> <span class="kn">import</span> <span class="n">TabularColumnMeta</span>
+
+
+<span class="k">class</span> <span class="nc">MyTabularModel</span><span class="p">(</span><span class="n">BaseTabularModel</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__train_result</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__classes</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__predictors</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__prediction_result_meta</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="c1"># Used to predict one row</span>
+    <span class="k">def</span> <span class="nf">predict_one</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:]</span>
+        <span class="c1">#</span>
+        <span class="c1"># Here we do a prediction and return predicted value.</span>
+        <span class="c1">#</span>
+        <span class="k">return</span> <span class="n">mt</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">row</span><span class="o">=</span><span class="n">data</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">__train_result</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">classes</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__classes</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">predictors</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">TabularColumnMeta</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__predictors</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">prediction_result_meta</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">TabularColumnMeta</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__prediction_result_meta</span>
+
+    <span class="c1"># Used to save state of the model into DeepCortex</span>
+    <span class="k">def</span> <span class="nf">get_state_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">any</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__train_result</span>
+
+    <span class="c1"># Used to load state of the model from DeepCortex</span>
+    <span class="k">def</span> <span class="nf">set_state_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state_dict</span><span class="p">:</span> <span class="nb">any</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__train_result</span> <span class="o">=</span> <span class="n">state_dict</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__classes</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__train_result</span><span class="p">[</span><span class="s1">&#39;classes&#39;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__predictors</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__train_result</span><span class="p">[</span><span class="s1">&#39;predictors&#39;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__prediction_result_meta</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__train_result</span><span class="p">[</span><span class="s1">&#39;result&#39;</span><span class="p">]</span>
+
+    <span class="c1"># Train the model</span>
+    <span class="k">def</span> <span class="nf">fit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">train_table</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__train_result</span> <span class="o">=</span> <span class="n">mt</span><span class="o">.</span><span class="n">train_tabular_model</span><span class="p">(</span><span class="n">train_table</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__classes</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__train_result</span><span class="p">[</span><span class="s1">&#39;classes&#39;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__predictors</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__train_result</span><span class="p">[</span><span class="s1">&#39;predictors&#39;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__prediction_result_meta</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__train_result</span><span class="p">[</span><span class="s1">&#39;result&#39;</span><span class="p">]</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="computer-vision-cv-models">
+<span id="cv-models"></span><h2>6.2 Computer Vision (CV) Models<a class="headerlink" href="#computer-vision-cv-models" title="Permalink to this headline">¶</a></h2>
+<p>The base class for CV models is
+<cite>deepcortex.ml.cv.base_model import BaseModel</cite></p>
+<p>In order to derive it, users have to implement the following methods and
+properties:</p>
+<ul class="simple">
+<li><p><strong>classes</strong> - property that returns list of classes the model can predict.</p></li>
+<li><p><strong>predict</strong> - method that performs prediction on input dataset. As a parameter
+it accepts iterator over numpy’s <cite>ndarray</cite> (collection of pictures, where
+each <cite>ndarray</cite> represents a picture). Returns a prediction result.</p></li>
+<li><p><strong>predict_proba</strong> - method that perform prediction. The difference with
+the <strong>predict</strong> method is only in results.</p></li>
+<li><p><strong>get_state_dict</strong> - method used for saving model state into storage. It
+should return any python structure of python primitives.</p></li>
+<li><p><strong>set_state_dict</strong> - method used for loading model state (weights and/or any
+other information required by model).</p></li>
+</ul>
+</div>
+<div class="section" id="prediction-result-of-cv-model">
+<h2>Prediction result of CV Model<a class="headerlink" href="#prediction-result-of-cv-model" title="Permalink to this headline">¶</a></h2>
+<p>Depending on the type of CV Model, the result value of <strong>predict</strong> and <strong>predict_proba</strong>
+methods differ.</p>
+</div>
+<div class="section" id="classification-model">
+<h2>Classification Model<a class="headerlink" href="#classification-model" title="Permalink to this headline">¶</a></h2>
+<p>For the classification model, method <strong>predict</strong> should return a tuple with
+the class name and it’s confidence; method <strong>predict_proba</strong> should return
+a list of probabilities of each class in the same order as property <strong>classes</strong>
+returns names of classes.</p>
+</div>
+<div class="section" id="detection-model">
+<h2>Detection Model<a class="headerlink" href="#detection-model" title="Permalink to this headline">¶</a></h2>
+<p>For the detection models the results are more complex; they also should include
+information about bounding boxes. Method <strong>predict</strong> should return a list of
+tuples like this: <cite>(x_min, y_min, x_max, y_max, label, confidence)</cite>.
+Method <strong>preduct_proba</strong> should return of list of tuples
+like this: <cite>(x_min, y_min, x_max, y_max, &lt;list of probs&gt;)</cite>,
+where <cite>&lt;list of probs&gt;</cite> is a list of probabilities of each class in the same
+order as property <strong>classes</strong> returns names of classes.</p>
+</div>
+<div class="section" id="example-of-the-cv-model">
+<h2>Example of the CV Model<a class="headerlink" href="#example-of-the-cv-model" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">List</span><span class="p">,</span> <span class="n">Iterable</span><span class="p">,</span> <span class="n">Iterator</span>
+<span class="kn">import</span> <span class="nn">magictools</span> <span class="k">as</span> <span class="nn">mt</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">deepcortex.ml.cv.base_model</span> <span class="kn">import</span> <span class="n">BaseModel</span><span class="p">,</span> <span class="n">DetectionProbaResult</span><span class="p">,</span> \
+    <span class="n">DetectionResult</span>
+
+
+<span class="k">class</span> <span class="nc">MyObjectDetectionModel</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__train_result</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__classes</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__predictors</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__prediction_result_meta</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="k">def</span> <span class="nf">predict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Iterator</span><span class="p">[</span><span class="n">DetectionResult</span><span class="p">]:</span>
+        <span class="k">for</span> <span class="n">predictions</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">predict_proba</span><span class="p">(</span><span class="n">data</span><span class="p">):</span>
+            <span class="k">yield</span> <span class="p">[</span>
+                <span class="p">(</span>
+                    <span class="n">x_min</span><span class="p">,</span><span class="n">y_min</span><span class="p">,</span> <span class="n">x_max</span><span class="p">,</span> <span class="n">y_max</span><span class="p">,</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">classes</span><span class="p">[</span><span class="n">probas</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="nb">max</span><span class="p">(</span><span class="n">probas</span><span class="p">))],</span> <span class="nb">max</span><span class="p">(</span><span class="n">probas</span><span class="p">)</span>
+                <span class="p">)</span>
+                <span class="k">for</span> <span class="n">x_min</span><span class="p">,</span> <span class="n">y_min</span><span class="p">,</span> <span class="n">x_max</span><span class="p">,</span> <span class="n">y_max</span><span class="p">,</span> <span class="n">probas</span> <span class="ow">in</span> <span class="n">predictions</span>
+            <span class="p">]</span>
+
+    <span class="k">def</span> <span class="nf">predict_proba</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">])</span> \
+    <span class="o">-&gt;</span> <span class="n">Iterator</span><span class="p">[</span><span class="n">DetectionProbaResult</span><span class="p">]:</span>
+        <span class="k">for</span> <span class="n">img</span> <span class="ow">in</span> <span class="n">data</span><span class="p">:</span>
+            <span class="k">yield</span> <span class="n">mt</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">image</span><span class="o">=</span><span class="n">img</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">__train_result</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">classes</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__classes</span>
+
+    <span class="k">def</span> <span class="nf">get_state_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">any</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__train_result</span>
+
+    <span class="k">def</span> <span class="nf">set_state_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state_dict</span><span class="p">:</span> <span class="nb">any</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__train_result</span> <span class="o">=</span> <span class="n">state_dict</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__classes</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__train_result</span><span class="p">[</span><span class="s1">&#39;classes&#39;</span><span class="p">]</span>
+
+    <span class="c1"># Train model</span>
+    <span class="k">def</span> <span class="nf">fit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">train_dataset</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__train_result</span> <span class="o">=</span> <span class="n">mt</span><span class="o">.</span><span class="n">train_detection_model</span><span class="p">(</span><span class="n">train_dataset</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__classes</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__train_result</span><span class="p">[</span><span class="s1">&#39;classes&#39;</span><span class="p">]</span>
+</pre></div>
+</div>
+<p>Next: <a class="reference internal" href="../dc-lib/index.html#dsl"><span class="std std-ref">7. Python DSL to work with DeepCortex</span></a></p>
+</div>
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../index.html">user-manual</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2020, Abheek Sambyal.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.0.3</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="../_sources/models/index.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

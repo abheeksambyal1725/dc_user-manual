@@ -1,0 +1,80 @@
+Previous: :ref:`models`
+
+
+.. _DSL:
+
+#####################################
+7. Python DSL to work with DeepCortex
+#####################################
+
+DSL Overview
+============
+
+DC Lib provides a set of convenient methods for DeepCortex API. The methods have well documented code.
+At the same time DC Lib can be used just like any python package: in some other Python package (as a library),
+imported in a python program and executed from the command line or a Jupyter notebook.
+
+
+.. _DSL_installation:
+
+7.1 Installation
+================
+
+First it is needed to get a URL of storage which is used to publish **dclib**. so contact support.
+
+Install dclib of a specific version (*~=* is used to get the latest version with fixes):
+
+.. code:: bash
+
+    $ pip install dclib~=<release-version> --extra-index-url "<storage_url>"
+
+For future reference you can:
+
+- set the url via command line if you haven't set up *extra-index-url* before
+
+.. code:: bash
+
+    $ pip config set install.extra-index-url '<storage_url>'
+
+- configure the url in **pip.conf** by adding a new *extra-index-url*
+
+.. code:: bash
+
+    [install]
+    extra-index-url = <previously set urls>
+                      <storage_url>
+    timeout = 20
+
+**On Unix:** by default pip looks into *$HOME/.config/pip/pip.conf* for configuration data.
+If you have set the conf and yet if the pip conf is not being picked please check
+that **pip.conf** is in the right home directory for the user. e.g. */root* or */home/user*
+
+.. container:: fillme
+
+    TODO: describe other possible options to install via pip or/and conda command
+
+
+
+.. _DSL_usage:
+
+7.2 Usage
+=========
+
+If you have an account on DeepCortex and want to gain access to DeepCortex library,
+you need to sign up for the account:
+
+.. code-block:: python
+
+    import deepcortex
+    deepcortex.login('user', 'password')
+
+If you have an account on custom DeepCortex installation and want to gain access to your assets there,
+pass the installation URL as *deepcortex_url* keyword parameter in *deepcortex.login()* method:
+
+.. code-block:: python
+
+    import deepcortex
+    deepcortex.login('user', 'password',
+                     deepcortex_url="http://<custom_deepcortex_url>:9000/")
+
+Also check :ref:`what_are_package_repositories` section to use custom operators or some other code from user packages

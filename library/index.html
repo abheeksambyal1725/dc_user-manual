@@ -1,0 +1,191 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>2. DeepCortex (DS) Assets &#8212; user-manual  documentation</title>
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <script src="../_static/language_data.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <p>Previous: <a class="reference internal" href="../overview.html#what-is-deepcortex"><span class="std std-ref">1. What is DeepCortex (DC)?</span></a></p>
+<div class="section" id="deepcortex-ds-assets">
+<span id="dc-assets"></span><h1>2. DeepCortex (DS) Assets<a class="headerlink" href="#deepcortex-ds-assets" title="Permalink to this headline">¶</a></h1>
+<p>DeepCortex allows users to create and manage different data science Asset types. The Library Module is the primary asset management module, where users can import, edit, delete these different assets within DeepCortex.
+Library Module’s User Interface consists of 3 main panels:</p>
+<ol class="arabic simple">
+<li><p>top-left panel: users can click the various action buttons here to create individual assets in DeepCortex (e.g. Create Album, Create Pipeline, Create DC Project, Create Experiment).</p></li>
+<li><dl class="simple">
+<dt>bottom-left panel: users can navigate to differnt Asset Category here (Albums, Tables, Models, Pipelines), which are further categorized using the following taxanomy:</dt><dd><ol class="loweralpha simple">
+<li><p>All: all the assets within the selected Asset Category</p></li>
+<li><p>Personal: all the assets that have been imported, created by the user</p></li>
+<li><p>Shared w/Me: all the assets that have been shared with the user by other users of DeepCortex</p></li>
+<li><p>Enterprise: all the assets that have been shared with the user by the Enterprise (subject to Enterprise’s access control)</p></li>
+<li><p>Third Party: all third-party assets that have been made available to the users of DeepCortex</p></li>
+<li><p>Recent: recently viewed assets</p></li>
+</ol>
+</dd>
+</dl>
+</li>
+<li><p>centre panel: users can view the list of different assets that are within the selecte Asset Category. On the top of the centre panel, are various action icons, that allows users to take specific actions on the individual assets (e.g Delete, Share, Clone etc.)</p></li>
+</ol>
+<p>Below screenshot shows the user interface for the Library Module</p>
+<div class="figure align-default">
+<img alt="../_images/overview.png" src="../_images/overview.png" />
+</div>
+<div class="section" id="what-are-different-asset-types-in-deepcortex">
+<span id="dc-asset-types"></span><h2>2.1 What are different Asset Types in DeepCortex?<a class="headerlink" href="#what-are-different-asset-types-in-deepcortex" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="data-assets">
+<h2>Data Assets<a class="headerlink" href="#data-assets" title="Permalink to this headline">¶</a></h2>
+<p>Data Assets in DeepCortex are stored as 1 of 3 asset types – Albums, Tables, and Binary Datasets.</p>
+<p><strong>Album</strong> asset type is used to store images (png, npy, jpeg) and corresponding image annotations (in VOC format),
+as well as Full Motion Videos (FMVs).</p>
+<p><strong>Table</strong> asset type is used to store tabular data (csv)</p>
+<p><strong>Binary Datasets</strong> asset type is used to store data as BLOB.</p>
+</div>
+<div class="section" id="model-assets">
+<h2>Model Assets<a class="headerlink" href="#model-assets" title="Permalink to this headline">¶</a></h2>
+<p>Models created within or uploaded to DeepCortex are stored in the asset types <strong>Models</strong>,
+<strong>CV Models</strong>. To learn more about Models in DeepCortex see <a class="reference internal" href="../models/index.html#models"><span class="std std-ref">6. Working with ML Models</span></a></p>
+</div>
+<div class="section" id="experimentation-assets">
+<h2>Experimentation Assets<a class="headerlink" href="#experimentation-assets" title="Permalink to this headline">¶</a></h2>
+<p><strong>Operators</strong> are logic blocks that perform independent operation within DeepCortex. Operators are developed and published within DeepCortex so that they can be used in pipelines. To learn more about Operators in DeepCortex see <a class="reference internal" href="../operators/index.html#design-operators"><span class="std std-ref">5. Designing Your Own Operators</span></a></p>
+<p><strong>Pipelines</strong> are assets constructed by stitching various Operators into a Directional Acyclic Graph (DAG). Pipelines in DeepCortex can be constructed to perform various tasks such as: Data Processing, AI Training, AI prediction etc. To learn more about Operators in DeepCortex see <a class="reference internal" href="../pipelines/index.html#pipelines"><span class="std std-ref">3. Pipelines</span></a></p>
+</div>
+<div class="section" id="how-to-upload-assets-to-deepcortex">
+<span id="upload-assets"></span><h2>2.2 How to upload Assets to DeepCortex?<a class="headerlink" href="#how-to-upload-assets-to-deepcortex" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="upload-data-assets">
+<h2>Upload Data Assets<a class="headerlink" href="#upload-data-assets" title="Permalink to this headline">¶</a></h2>
+<p>Users should follow the below steps to upload any of the Data Asset discussed in <a class="reference internal" href="#dc-asset-types"><span class="std std-ref">2.1 What are different Asset Types in DeepCortex?</span></a> section:</p>
+<p>Step 1: Before uploading data to DC, create an empty Album, Table, or Binary Dataset based on the type of data
+being uploaded. The below screenshots shows how the action buttons on the top-left panel of Library allow users
+to create assets in DC.</p>
+<div class="figure align-default">
+<img alt="../_images/create_album_1.png" src="../_images/create_album_1.png" />
+</div>
+<div class="figure align-default">
+<img alt="../_images/create_album.png" src="../_images/create_album.png" />
+</div>
+<p>Step 2: Upload the Images, FMVs, or CSV to the asset using the action button on the top-left panel, as shown below</p>
+<div class="figure align-default">
+<img alt="../_images/upload_assets.png" src="../_images/upload_assets.png" />
+</div>
+<p>There are 2 sources from where data can be uploaded into DC:
+Option 1: From S3
+Option 2: From Desktop</p>
+<p>While uploading from desktop only requires specifying the path to the data, uploading from
+an S3 bucket requires additional configuration parameters like S3 Bucket Name, Region Name, as well as AWS access keys/tokens, as shown below:</p>
+<div class="figure align-default">
+<img alt="../_images/upload_from_s3.png" src="../_images/upload_from_s3.png" />
+</div>
+</div>
+<div class="section" id="how-to-import-model-assets-to-deepcortex">
+<h2>How to import Model Assets to DeepCortex?<a class="headerlink" href="#how-to-import-model-assets-to-deepcortex" title="Permalink to this headline">¶</a></h2>
+<div class="fillme docutils container">
+<p>TODO: how to export/import model assets</p>
+</div>
+<p>Models can be imported into DeepCortex using the “Import Model” action button on the top-left panel of Library. Once imported, the Models can be viewed by clicking on the CV Models or Models Asset Category on the left panel of Library</p>
+</div>
+<div class="section" id="how-to-share-assets-in-deepcortex">
+<span id="share-assets"></span><h2>2.3 How to share Assets in DeepCortex?<a class="headerlink" href="#how-to-share-assets-in-deepcortex" title="Permalink to this headline">¶</a></h2>
+<p>Users of DeepCortex can share assets with each other. Sharing assets is as simple as selecting the asset in Library and clicking the “Share” icon on the top of the centre panel. User will then be prompted to provide the recipient user’s email address (email address should be the same as what was used during account setup for the receipient user) with whom the specific asset is being shared.</p>
+<div class="figure align-default">
+<img alt="../_images/share_1.png" src="../_images/share_1.png" />
+</div>
+<p>Assets that have been shared with you will appear in the “Shared with Me” folder under any asset category as shown below</p>
+<div class="figure align-default">
+<img alt="../_images/share_2.png" src="../_images/share_2.png" />
+</div>
+<p>Next: <a class="reference internal" href="../pipelines/index.html#pipelines"><span class="std std-ref">3. Pipelines</span></a></p>
+</div>
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../index.html">user-manual</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2020, Abheek Sambyal.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.0.3</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="../_sources/library/index.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

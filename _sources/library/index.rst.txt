@@ -1,0 +1,123 @@
+Previous: :ref:`what_is_deepcortex`
+
+
+.. _dc_assets:
+
+#########################
+2. DeepCortex (DS) Assets
+#########################
+
+DeepCortex allows users to create and manage different data science Asset types. The Library Module is the primary asset management module, where users can import, edit, delete these different assets within DeepCortex. 
+Library Module's User Interface consists of 3 main panels:
+
+1. top-left panel: users can click the various action buttons here to create individual assets in DeepCortex (e.g. Create Album, Create Pipeline, Create DC Project, Create Experiment).
+2. bottom-left panel: users can navigate to differnt Asset Category here (Albums, Tables, Models, Pipelines), which are further categorized using the following taxanomy:
+	a. All: all the assets within the selected Asset Category
+	b. Personal: all the assets that have been imported, created by the user
+	c. Shared w/Me: all the assets that have been shared with the user by other users of DeepCortex
+	d. Enterprise: all the assets that have been shared with the user by the Enterprise (subject to Enterprise's access control)
+	e. Third Party: all third-party assets that have been made available to the users of DeepCortex 
+	f. Recent: recently viewed assets
+3. centre panel: users can view the list of different assets that are within the selecte Asset Category. On the top of the centre panel, are various action icons, that allows users to take specific actions on the individual assets (e.g Delete, Share, Clone etc.)
+
+Below screenshot shows the user interface for the Library Module
+
+.. figure:: images/overview.png
+
+
+.. _dc_asset_types:
+
+2.1 What are different Asset Types in DeepCortex?
+=================================================
+
+Data Assets
+===========
+
+Data Assets in DeepCortex are stored as 1 of 3 asset types – Albums, Tables, and Binary Datasets.
+
+**Album** asset type is used to store images (png, npy, jpeg) and corresponding image annotations (in VOC format),
+as well as Full Motion Videos (FMVs).
+
+**Table** asset type is used to store tabular data (csv)
+
+**Binary Datasets** asset type is used to store data as BLOB.
+
+
+Model Assets
+============
+
+Models created within or uploaded to DeepCortex are stored in the asset types **Models**,
+**CV Models**. To learn more about Models in DeepCortex see :ref:`models`
+
+
+Experimentation Assets
+======================
+
+**Operators** are logic blocks that perform independent operation within DeepCortex. Operators are developed and published within DeepCortex so that they can be used in pipelines. To learn more about Operators in DeepCortex see :ref:`design_operators`
+
+**Pipelines** are assets constructed by stitching various Operators into a Directional Acyclic Graph (DAG). Pipelines in DeepCortex can be constructed to perform various tasks such as: Data Processing, AI Training, AI prediction etc. To learn more about Operators in DeepCortex see :ref:`pipelines`
+
+
+
+.. _upload_assets:
+
+2.2 How to upload Assets to DeepCortex?
+=======================================
+
+Upload Data Assets
+==================
+
+Users should follow the below steps to upload any of the Data Asset discussed in :ref:`dc_asset_types` section:
+
+Step 1: Before uploading data to DC, create an empty Album, Table, or Binary Dataset based on the type of data
+being uploaded. The below screenshots shows how the action buttons on the top-left panel of Library allow users
+to create assets in DC.
+
+.. figure:: images/create_album_1.png
+.. figure:: images/create_album.png
+
+Step 2: Upload the Images, FMVs, or CSV to the asset using the action button on the top-left panel, as shown below
+
+.. figure:: images/upload_assets.png
+
+There are 2 sources from where data can be uploaded into DC: 
+Option 1: From S3
+Option 2: From Desktop
+
+While uploading from desktop only requires specifying the path to the data, uploading from
+an S3 bucket requires additional configuration parameters like S3 Bucket Name, Region Name, as well as AWS access keys/tokens, as shown below:
+
+.. figure:: images/upload_from_s3.png
+
+
+
+How to import Model Assets to DeepCortex?
+=========================================
+
+.. container:: fillme
+
+    TODO: how to export/import model assets
+
+Models can be imported into DeepCortex using the "Import Model" action button on the top-left panel of Library. Once imported, the Models can be viewed by clicking on the CV Models or Models Asset Category on the left panel of Library
+
+
+
+.. _share_assets:
+
+2.3 How to share Assets in DeepCortex?
+======================================
+
+Users of DeepCortex can share assets with each other. Sharing assets is as simple as selecting the asset in Library and clicking the “Share” icon on the top of the centre panel. User will then be prompted to provide the recipient user's email address (email address should be the same as what was used during account setup for the receipient user) with whom the specific asset is being shared. 
+
+.. figure:: images/share_1.png
+
+
+Assets that have been shared with you will appear in the “Shared with Me” folder under any asset category as shown below 
+
+.. figure:: images/share_2.png
+
+
+
+
+
+Next: :ref:`pipelines`

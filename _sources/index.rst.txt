@@ -1,0 +1,81 @@
+.. include:: .cover.rst
+
+.. footer::
+
+    .. table::
+        :class: page-footer-table
+
+        +-------------------------------+-----------------------------------+
+        | | **DeepCortex User Manual**  | .. class:: page-footer            |
+        | | ###Section###               |   page ###Page### of ###Total###  |
+        +-------------------------------+-----------------------------------+
+
+ 
+
+ 
+   
+Table of Content
+================
+:ref:`what_is_deepcortex`
+  :ref:`who_is_dc_for`
+
+  :ref:`what_are_diff_modules`
+:ref:`dc_assets`    
+  :ref:`dc_asset_types`   
+
+  :ref:`upload_assets`
+
+  :ref:`share_assets`
+:ref:`pipelines`
+  :ref:`what_are_pipelines`
+
+  :ref:`how_to_construct_pipelines`
+
+  :ref:`how_to_configure_operators_in_pipelines`
+
+  :ref:`how_to_execute_pipelines`
+:ref:`dc_operators`
+  :ref:`what_are_dc_operators`
+
+  :ref:`what_are_dc_projects`
+
+  :ref:`how_to_create_operators`
+
+  :ref:`how_to_use_operators`
+
+  :ref:`what_are_package_repositories`
+:ref:`design_operators`
+  :ref:`how_to_design_operators`
+
+  :ref:`publish_decorator`
+    :ref:`operator_parameters`
+
+    :ref:`operator_input_output`
+  :ref:`operator_summary` 
+
+  :ref:`operator_enhancements`
+    :ref:`how_to_write_custom_component`
+  
+    :ref:`how_to_specify_custom_component_in_operator`
+  
+    :ref:`custom_component`
+
+    :ref:`custom_parameter_component`
+
+    :ref:`custom_EDA_component`
+    
+    :ref:`inspections`
+
+    :ref:`builtin_enhacement`
+      :ref:`tabular_charting`
+:ref:`models`
+  :ref:`tabular_models`
+
+  :ref:`CV_models`
+:ref:`DSL`
+  :ref:`DSL_installation`
+
+  :ref:`DSL_usage`
+
+
+

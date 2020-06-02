@@ -1,0 +1,1048 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>5. Designing Your Own Operators &#8212; user-manual  documentation</title>
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <script src="../_static/language_data.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <p>Previous: <a class="reference internal" href="../dc-projects/index.html#dc-operators"><span class="std std-ref">4. DeepCortex (DC) Operators</span></a></p>
+<div class="section" id="designing-your-own-operators">
+<span id="design-operators"></span><h1>5. Designing Your Own Operators<a class="headerlink" href="#designing-your-own-operators" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="operator-design">
+<span id="how-to-design-operators"></span><h2>5.1 Operator Design<a class="headerlink" href="#operator-design" title="Permalink to this headline">¶</a></h2>
+<p>Operator class should override abstract class <cite>PipelineOperator</cite>
+from <cite>deepcortex.pipelines.pipeline_operator</cite> module and implement
+at least 2 methods:</p>
+<ul class="simple">
+<li><p><strong>configure</strong> method which configures an instance of the operator.
+This method should accept parameters and store them in the instance.</p></li>
+<li><p><strong>apply</strong> method that contains the code implementing the operator’s logic.</p></li>
+</ul>
+<p>Also, there is an optional method <strong>summary</strong> that the user can override
+in order to output information collected in the <strong>apply</strong> method;
+see <a class="reference internal" href="#operator-summary"><span class="std std-ref">5.3 Operator Summaries</span></a> section for more details
+The typical operator lifecycle is as follows:</p>
+<ol class="arabic simple">
+<li><p>DeepCortex creates an instance of the operator class.</p></li>
+<li><p>DeepCortex invokes the <strong>configure</strong> method  of the instance and passes
+parameters configured for the step of the pipeline.</p></li>
+<li><p>DeepCortex invokes the <strong>apply</strong> method of the instance and passes inputs
+configured for the step of the pipeline as named parameters to the method.
+Returned values are stored as outputs of the step.</p></li>
+<li><p>DeepCortex invokes the <strong>summary</strong> method of the instance and stores
+a returned list of summary-objects in the step results.</p></li>
+</ol>
+<p>In order to make operator available in Canvas you need to decorate your operator
+with <a class="reference internal" href="#publish-decorator"><span class="std std-ref">5.2 &#64;publish decorator</span></a> from <cite>deepcortex.pipelines</cite> module.</p>
+<p>Below is an example of an operator that accepts a table as an input, drops
+a single column in that table and returns a modified table as an output. Column
+name to drop should be configured in operator parameters.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">List</span>
+<span class="kn">from</span> <span class="nn">deepcortex.library.tables</span> <span class="kn">import</span> <span class="n">Table</span><span class="p">,</span> <span class="n">from_pandas</span>
+<span class="kn">from</span> <span class="nn">deepcortex.pipelines</span> <span class="kn">import</span> <span class="n">PipelineOperator</span><span class="p">,</span> <span class="n">publish</span>
+
+<span class="nd">@publish</span><span class="p">(</span>
+    <span class="n">name</span><span class="o">=</span><span class="s2">&quot;Drop table column&quot;</span><span class="p">,</span>
+    <span class="n">parameters</span><span class="o">=</span><span class="p">{</span>
+        <span class="s1">&#39;column_name&#39;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="s1">&#39;Column name to drop&#39;</span>
+        <span class="p">},</span>
+    <span class="p">}</span>
+<span class="p">)</span>
+<span class="k">class</span> <span class="nc">DropTableColumn</span><span class="p">(</span><span class="n">PipelineOperator</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">apply</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">table</span><span class="p">:</span> <span class="n">Table</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Table</span><span class="p">]:</span>
+        <span class="n">df</span> <span class="o">=</span> <span class="n">table</span><span class="o">.</span><span class="n">to_pandas</span><span class="p">()</span>
+        <span class="n">new_df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">drop</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">__column_name</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">from_pandas</span><span class="p">(</span><span class="n">new_df</span><span class="p">),</span>
+
+    <span class="k">def</span> <span class="nf">configure</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">column_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__column_name</span> <span class="o">=</span> <span class="n">column_name</span>
+</pre></div>
+</div>
+<p>Building the above Operator code as discussed in section <a class="reference internal" href="../dc-projects/index.html#how-to-create-operators"><span class="std std-ref">4.3 How to create Operators in DeepCortex?</span></a> will enable users to then use this custom operator in pipelines on canvas or IDE as shown below:</p>
+<img alt="../_images/drop_column_operator_in_pipeline.png" src="../_images/drop_column_operator_in_pipeline.png" />
+</div>
+<div class="section" id="publish-decorator">
+<span id="id1"></span><h2>5.2 &#64;publish decorator<a class="headerlink" href="#publish-decorator" title="Permalink to this headline">¶</a></h2>
+<p>&#64;publish decorator is used as the decorator for <strong>building</strong> / <strong>publishing</strong> operators for use in Canvas via UI. An operator with &#64;publish decorator that has been build / published becomes
+available to use on the Canvas via DeepCortex UI.</p>
+<p>It should be applied to a class that overrides the
+<cite>deepcortex.pipelines.pipeline_operator.PipelineOperator</cite> class and can be
+configured with the following list of named parameters:</p>
+<ul class="simple">
+<li><p><strong>name</strong> (mandatory) - short human readable name of the operator.</p></li>
+<li><p><strong>description</strong> (optional) - human readable description of the operator.</p></li>
+<li><p><strong>parameters</strong> (optional) - additional information for parameters like
+description, list of available values, conditions, etc.</p></li>
+<li><p><strong>inputs</strong> (optional) - additional information about operator inputs.</p></li>
+<li><p><strong>outputs</strong> (optional) - additional information about operator outputs.</p></li>
+<li><p><strong>custom_component</strong> (optional) - reference to custom operator enhancement;
+see <a class="reference internal" href="#custom-component"><span class="std std-ref">5.4.3 Custom operator components</span></a> section for more details.</p></li>
+<li><p><strong>custom_eda_components</strong> (optional) - list of references to EDA enhancements;
+see <a class="reference internal" href="#custom-eda-component"><span class="std std-ref">5.4.5 Custom EDA components</span></a> section for more details.</p></li>
+<li><p><strong>inspections</strong> (optional) - list of named inspections, see <a class="reference internal" href="#inspections"><span class="std std-ref">5.4.6 Inspections</span></a> for
+more details.</p></li>
+</ul>
+<p>The only mandatory parameter is <strong>name</strong>. Along with the <strong>description</strong> they
+are used only in the UI for visual display.</p>
+<p>Usage of <strong>custom_component</strong>, <strong>custom_eda_components</strong> and
+<strong>inspections</strong> described in section <a class="reference internal" href="#operator-enhancements"><span class="std std-ref">5.4 Operator enhancements</span></a></p>
+</div>
+<div class="section" id="operator-parameters">
+<span id="id2"></span><h2>5.2.1 Operator parameters<a class="headerlink" href="#operator-parameters" title="Permalink to this headline">¶</a></h2>
+<p>Operator parameters are arguments for the <cite>configure</cite> method.</p>
+<p>Parameters should be either primitive type, like <cite>str</cite>, <cite>int</cite>, <cite>float</cite>, <cite>bool</cite>
+or a list of primitive type like <cite>List[str]</cite>, <cite>List[bool]</cite>, etc.</p>
+<p>For example, the following operator has two configuration parameters:
+numeric <cite>magic_number</cite> and stringy <cite>simple_string</cite>.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Tuple</span>
+<span class="kn">from</span> <span class="nn">deepcortex.pipelines</span> <span class="kn">import</span> <span class="n">publish</span><span class="p">,</span> <span class="n">PipelineOperator</span>
+
+<span class="nd">@publish</span><span class="p">(</span><span class="s2">&quot;Example operator&quot;</span><span class="p">)</span>
+<span class="k">class</span> <span class="nc">ExampleOperator</span><span class="p">(</span><span class="n">PipelineOperator</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">apply</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="ow">in</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="ow">in</span><span class="p">),</span>
+
+    <span class="k">def</span> <span class="nf">configure</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">magic_number</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">42</span><span class="p">,</span> <span class="n">simple_string</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__m</span> <span class="o">=</span> <span class="n">magic_number</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__s</span> <span class="o">=</span> <span class="n">simple_string</span>
+</pre></div>
+</div>
+<p>In this case, the system automatically analyzes the signature of the
+<cite>configure</cite> method and detects those parameters. It extracts parameter names,
+types and default values.</p>
+<p>However it is possible to specify them manually in order to specify more
+information for the UI.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Tuple</span>
+<span class="kn">from</span> <span class="nn">deepcortex.pipelines</span> <span class="kn">import</span> <span class="n">publish</span><span class="p">,</span> <span class="n">PipelineOperator</span>
+
+<span class="nd">@publish</span><span class="p">(</span>
+    <span class="s2">&quot;Example operator&quot;</span><span class="p">,</span>
+    <span class="n">parameters</span><span class="o">=</span><span class="p">{</span>
+        <span class="s1">&#39;magic_number&#39;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="s1">&#39;My Magic Number&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;min&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+        <span class="p">},</span>
+        <span class="s1">&#39;simple_string&#39;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="s1">&#39;Very Simple String&#39;</span><span class="p">,</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+<span class="p">)</span>
+<span class="k">class</span> <span class="nc">ExampleOperator</span><span class="p">(</span><span class="n">PipelineOperator</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">apply</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="ow">in</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="ow">in</span><span class="p">),</span>
+
+    <span class="k">def</span> <span class="nf">configure</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">magic_number</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">42</span><span class="p">,</span> <span class="n">simple_string</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__m</span> <span class="o">=</span> <span class="n">magic_number</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__s</span> <span class="o">=</span> <span class="n">simple_string</span>
+</pre></div>
+</div>
+<p>The following list of options is available for the parameters:</p>
+<ul class="simple">
+<li><p><strong>description</strong> - contains human-readable description of the parameter.</p></li>
+<li><p><strong>default</strong> - contains default values for the parameter; however, it is better to
+avoid specifying <strong>default</strong> in the decorator.
+The preferred method is to specify default values in the signature of the
+<cite>configure</cite> method.</p></li>
+<li><p><strong>min</strong> - contains minimum value for the numeric parameters.</p></li>
+<li><p><strong>max</strong> - contains maximum value for the numeric parameters.</p></li>
+<li><p><strong>values</strong> - contains a list of possible values for the parameter, makes sense
+only for stringy and numeric parameters.</p></li>
+<li><p><strong>conditions</strong> - contains a dictionary with conditions for the parameter;
+see <a class="reference internal" href="#conditional-parameters">Conditional parameters</a> section for more details.</p></li>
+<li><p><strong>asset_type</strong> contains a type of asset for this parameter; see
+<a class="reference internal" href="#using-assets-as-parameters">Using assets as parameters</a> section for more details.</p></li>
+<li><p><strong>custom_component</strong> - contains reference to the custom component for this
+parameter; see <a class="reference internal" href="#custom-parameter-component"><span class="std std-ref">5.4.4 Custom parameter components</span></a> section for more details.</p></li>
+</ul>
+<p>Also it is possible to make parameters with multiple values. In order to do this
+you need to specify the type of the parameter as a <cite>List</cite> of desired type,
+for example:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">List</span>
+<span class="kn">from</span> <span class="nn">deepcortex.pipelines</span> <span class="kn">import</span> <span class="n">publish</span><span class="p">,</span> <span class="n">PipelineOperator</span>
+
+<span class="nd">@publish</span><span class="p">(</span>
+    <span class="s2">&quot;Example operator&quot;</span><span class="p">,</span>
+    <span class="n">parameters</span><span class="o">=</span><span class="p">{</span>
+        <span class="s1">&#39;numbers&#39;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="s1">&#39;My Magic Numbers&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;min&#39;</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">,</span>
+            <span class="s1">&#39;max&#39;</span><span class="p">:</span> <span class="mf">1.0</span><span class="p">,</span>
+        <span class="p">},</span>
+    <span class="p">}</span>
+<span class="p">)</span>
+<span class="k">class</span> <span class="nc">ExampleOperator</span><span class="p">(</span><span class="n">PipelineOperator</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">apply</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">num</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="n">num</span><span class="p">),</span>
+    <span class="k">def</span> <span class="nf">configure</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">numbers</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">]):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__m</span> <span class="o">=</span> <span class="n">numbers</span>
+</pre></div>
+</div>
+<p>In this case the system detects that parameter <cite>magic_number</cite> has the type <cite>float</cite> that,
+can have multiple values, where each value should be between 0.0 and 1.0.</p>
+</div>
+<div class="section" id="using-assets-as-parameters">
+<h2>Using assets as parameters<a class="headerlink" href="#using-assets-as-parameters" title="Permalink to this headline">¶</a></h2>
+<p>If your parameter accepts an ID of an asset, it is possible to tell the UI
+the type of this asset. In this case, the UI will draw a fancy asset selector
+component (instead of a simple text box) with the ability to see and search by
+asset names.</p>
+<p>Desired parameter type should be <cite>str</cite>, because all asset IDs are strings.</p>
+<p>For example, if you want to configure your operator with an album ID you can
+do the following:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Tuple</span>
+<span class="kn">from</span> <span class="nn">deepcortex.pipelines</span> <span class="kn">import</span> <span class="n">publish</span><span class="p">,</span> <span class="n">PipelineOperator</span>
+<span class="kn">from</span> <span class="nn">deepcortex.pipelines.asset_type</span> <span class="kn">import</span> <span class="n">AssetType</span>
+<span class="kn">from</span> <span class="nn">deepcortex</span> <span class="kn">import</span> <span class="n">library</span>
+<span class="kn">from</span> <span class="nn">deepcortex.exceptions</span> <span class="kn">import</span> <span class="n">NotFoundException</span>
+<span class="kn">from</span> <span class="nn">deepcortex.library.albums</span> <span class="kn">import</span> <span class="n">Album</span>
+
+<span class="nd">@publish</span><span class="p">(</span>
+    <span class="s1">&#39;My select album&#39;</span><span class="p">,</span>
+    <span class="n">parameters</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s1">&#39;album_id&#39;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="s1">&#39;Album to load&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;asset_type&#39;</span><span class="p">:</span> <span class="n">AssetType</span><span class="o">.</span><span class="n">Album</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+<span class="p">)</span>
+<span class="k">class</span> <span class="nc">MySelectAlbum</span><span class="p">(</span><span class="n">PipelineOperator</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">apply</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Album</span><span class="p">]:</span>
+        <span class="n">album</span> <span class="o">=</span> <span class="n">library</span><span class="o">.</span><span class="n">albums</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__album_id</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">album</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">album</span><span class="p">,</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">NotFoundException</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">configure</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">album_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__album_id</span> <span class="o">=</span> <span class="n">album_id</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="conditional-parameters">
+<h2>Conditional parameters<a class="headerlink" href="#conditional-parameters" title="Permalink to this headline">¶</a></h2>
+<p>Conditions for parameters allows the UI to show/hide some parameters
+depending on the values of other parameters.</p>
+<p>For example, the following operator has four parameters: <cite>algorithm</cite>,
+<cite>regularity</cite>, <cite>complexity</cite> and <cite>complexity_name</cite>. The only mandatory parameter
+is <cite>algorithm</cite> with possible values of ‘Simple’, ‘Regular’, ‘Complex’.</p>
+<p>Parameter <cite>regularity</cite> should be mandatory only if <cite>algorithm</cite> is ‘Regular’.</p>
+<p>Parameter <cite>complexity</cite> should be mandatory only if <cite>algorithm</cite> is ‘Complex’.</p>
+<p>Parameter <cite>complexity_name</cite> should be mandatory only if <cite>algorithm</cite>
+is ‘Complex’ and the value of <cite>complexity</cite> is more that 2.</p>
+<p>This is how it looks in the &#64;publish decorator parameters:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">List</span>
+<span class="kn">from</span> <span class="nn">deepcortex.pipelines</span> <span class="kn">import</span> <span class="n">publish</span><span class="p">,</span> <span class="n">PipelineOperator</span>
+
+<span class="nd">@publish</span><span class="p">(</span>
+    <span class="s2">&quot;Example operator&quot;</span><span class="p">,</span>
+    <span class="n">parameters</span><span class="o">=</span><span class="p">{</span>
+        <span class="s1">&#39;algorithm&#39;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="s1">&#39;Algorithm&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;values&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;Simple&#39;</span><span class="p">,</span> <span class="s1">&#39;Regular&#39;</span><span class="p">,</span> <span class="s1">&#39;Complex&#39;</span><span class="p">],</span>
+        <span class="p">},</span>
+        <span class="s1">&#39;regularity&#39;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="s1">&#39;Number of regularity&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;conditions&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;algorithm&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;values&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;Regular&#39;</span><span class="p">]}}</span>
+        <span class="p">},</span>
+        <span class="s1">&#39;complexity&#39;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="s1">&#39;Number of Complexity&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;conditions&#39;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s1">&#39;algorithm&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;values&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;Complex&#39;</span><span class="p">]}</span>
+            <span class="p">}</span>
+        <span class="p">},</span>
+        <span class="s1">&#39;complexity_name&#39;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="s1">&#39;Name of Complexity&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;conditions&#39;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s1">&#39;algorithm&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;values&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;Complex&#39;</span><span class="p">]},</span>
+                <span class="s1">&#39;complexity&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;min&#39;</span><span class="p">:</span> <span class="mi">2</span><span class="p">},</span>
+            <span class="p">}</span>
+        <span class="p">},</span>
+    <span class="p">}</span>
+<span class="p">)</span>
+<span class="k">class</span> <span class="nc">ExampleOperator</span><span class="p">(</span><span class="n">PipelineOperator</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">apply</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">num</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="n">num</span><span class="p">),</span>
+    <span class="k">def</span> <span class="nf">configure</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+        <span class="n">algorithm</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;Simple&#39;</span><span class="p">,</span>
+        <span class="n">regularity</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">complexity</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">complexity_name</span><span class="p">:</span> <span class="n">string</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="k">pass</span>
+</pre></div>
+</div>
+<p>Conditions should contain a dictionary with a parent parameter name
+as a key and a dictionary with conditions as a value.
+The dictionary with conditions could have the following keys:</p>
+<ul class="simple">
+<li><p><strong>value</strong> with a value of the parent parameter
+(works only for boolean parameters).</p></li>
+<li><p><strong>values</strong> with the list of values of the parent parameter
+(works for numeric and stringy parameters).</p></li>
+<li><p><strong>min</strong> with a minimum value of the numeric parent parameter
+(works for numeric parameters only).</p></li>
+<li><p><strong>max</strong> with a maximum value of the numeric parent parameter
+(works for numeric parameters only).</p></li>
+</ul>
+<p>Note: you can’t specify the <strong>values</strong> condition along with <strong>min</strong> or <strong>max</strong>
+in the same parent parameter.</p>
+</div>
+<div class="section" id="operator-inputs-and-outputs">
+<span id="operator-input-output"></span><h2>5.2.2 Operator inputs and outputs<a class="headerlink" href="#operator-inputs-and-outputs" title="Permalink to this headline">¶</a></h2>
+<p>Inputs are parameters of the <cite>apply</cite> method of the operator.</p>
+<p>Outputs are values of the tuple that must be returned by the <cite>apply</cite> method
+of the operator.</p>
+<p>Usually the system automatically detects inputs and outputs of the operator by
+inspecting the signature of the <cite>apply</cite> method.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Tuple</span>
+<span class="kn">from</span> <span class="nn">deepcortex.pipelines</span> <span class="kn">import</span> <span class="n">publish</span><span class="p">,</span> <span class="n">PipelineOperator</span>
+
+<span class="nd">@publish</span><span class="p">(</span><span class="s2">&quot;Concatenate two strings&quot;</span><span class="p">)</span>
+<span class="k">class</span> <span class="nc">ConcatenateOperator</span><span class="p">(</span><span class="n">PipelineOperator</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">apply</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">first</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">second</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">len</span><span class="p">]:</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="n">first</span> <span class="o">+</span> <span class="n">second</span>
+        <span class="k">return</span> <span class="n">result</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">configure</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">pass</span>
+</pre></div>
+</div>
+<p>However, it is possible to explicitly specify them in the <cite>&#64;publish</cite> decorator
+in order to provide human-readable names for the UI.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Tuple</span>
+<span class="kn">from</span> <span class="nn">deepcortex.pipelines</span> <span class="kn">import</span> <span class="n">publish</span><span class="p">,</span> <span class="n">PipelineOperator</span><span class="p">,</span> <span class="n">OperatorInput</span><span class="p">,</span> <span class="n">OperatorOutput</span>
+
+<span class="nd">@publish</span><span class="p">(</span>
+    <span class="s2">&quot;Concatenate two strings&quot;</span>
+    <span class="n">inputs</span><span class="o">=</span><span class="p">{</span>
+        <span class="s1">&#39;first&#39;</span><span class="p">:</span> <span class="n">OperatorInput</span><span class="p">(</span><span class="s1">&#39;First string&#39;</span><span class="p">),</span>
+        <span class="s1">&#39;second&#39;</span><span class="p">:</span> <span class="n">OperatorInput</span><span class="p">(</span><span class="s1">&#39;Second string&#39;</span><span class="p">)</span>
+    <span class="p">},</span>
+    <span class="n">outputs</span><span class="o">=</span><span class="p">(</span>
+        <span class="n">OperatorOutput</span><span class="p">(</span><span class="s1">&#39;Result concatenated string&#39;</span><span class="p">),</span>
+        <span class="n">OperatorOutput</span><span class="p">(</span><span class="s1">&#39;Length of the result string&#39;</span><span class="p">)</span>
+    <span class="p">),</span>
+<span class="p">)</span>
+<span class="k">class</span> <span class="nc">ConcatenateOperator</span><span class="p">(</span><span class="n">PipelineOperator</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">apply</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">first</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">second</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">len</span><span class="p">]:</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="n">first</span> <span class="o">+</span> <span class="n">second</span>
+        <span class="k">return</span> <span class="n">result</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">configure</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">pass</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="operator-summaries">
+<span id="operator-summary"></span><h2>5.3 Operator Summaries<a class="headerlink" href="#operator-summaries" title="Permalink to this headline">¶</a></h2>
+<p>During pipeline execution, an operator can collect information/data, store it inside
+the instance, as well as return it to the user for display.</p>
+<p>Method <strong>summary</strong> should return a list of object derived from class
+<cite>deepcortex.pipelines.operator_application_summary.OperatorApplicationSummary</cite>.</p>
+<p>Currently, there are 3 derived classes that can be used to represent
+information stored in different structures:</p>
+<ul class="simple">
+<li><p><strong>SimpleSummary</strong> - contains an information in the form of a dictionary.</p></li>
+<li><p><strong>TableSummary</strong> - contains an information in the form of a table.</p></li>
+<li><p><strong>ConfusionMatrix</strong> - contains an information in the form of a confusion matrix.</p></li>
+</ul>
+<p>All these classes are located in module
+<cite>deepcortex.pipelines.operator_application_summary</cite>.</p>
+<p>Method <strong>summary</strong> can return a list of any combination of these summaries.</p>
+</div>
+<div class="section" id="simplesummary">
+<h2>SimpleSummary<a class="headerlink" href="#simplesummary" title="Permalink to this headline">¶</a></h2>
+<p><cite>SimpleSummary</cite> class accepts a dict with strings as keys and primitive values
+(that can be casted to strings) as values.</p>
+<p>For example:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Tuple</span>
+<span class="kn">from</span> <span class="nn">math</span> <span class="kn">import</span> <span class="n">sqrt</span>
+<span class="kn">from</span> <span class="nn">itertools</span> <span class="kn">import</span> <span class="n">count</span><span class="p">,</span> <span class="n">islice</span>
+
+<span class="kn">from</span> <span class="nn">deepcortex.pipelines</span> <span class="kn">import</span> <span class="n">PipelineOperator</span><span class="p">,</span> <span class="n">publish</span>
+<span class="kn">from</span> <span class="nn">deepcortex.pipelines.operator_application_summary</span> <span class="kn">import</span> <span class="n">SimpleSummary</span>
+
+<span class="nd">@publish</span><span class="p">(</span>
+    <span class="n">name</span><span class="o">=</span><span class="s1">&#39;Analyze Number&#39;</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="k">class</span> <span class="nc">AnalyzeNumberOperator</span><span class="p">(</span><span class="n">PipelineOperator</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">apply</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">]:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__x</span> <span class="o">=</span> <span class="n">x</span>
+        <span class="k">return</span> <span class="n">x</span><span class="p">,</span>
+
+    <span class="k">def</span> <span class="nf">configure</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">pass</span>
+
+    <span class="k">def</span> <span class="nf">summary</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">is_prime</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_is_prime</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__x</span><span class="p">)</span>
+        <span class="n">is_even</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__x</span> <span class="o">%</span> <span class="mi">2</span> <span class="o">==</span> <span class="mi">0</span>
+        <span class="k">return</span> <span class="p">[</span>
+            <span class="n">SimpleSummary</span><span class="p">({</span>
+                <span class="s1">&#39;Is Prime Number&#39;</span><span class="p">:</span> <span class="s1">&#39;Yes&#39;</span> <span class="k">if</span> <span class="n">is_prime</span> <span class="k">else</span> <span class="s1">&#39;No&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;Is Even Number&#39;</span><span class="p">:</span> <span class="s1">&#39;Yes&#39;</span> <span class="k">if</span> <span class="n">is_even</span> <span class="k">else</span> <span class="s1">&#39;No&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;Is Odd Number&#39;</span><span class="p">:</span> <span class="s1">&#39;No&#39;</span> <span class="k">if</span> <span class="n">is_even</span> <span class="k">else</span> <span class="s1">&#39;Yes&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;Less than hundred&#39;</span><span class="p">:</span> <span class="s1">&#39;Yes&#39;</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">__x</span> <span class="o">&lt;</span> <span class="mi">100</span> <span class="k">else</span> <span class="s1">&#39;No&#39;</span><span class="p">,</span>
+            <span class="p">})</span>
+        <span class="p">]</span>
+    <span class="k">def</span> <span class="nf">_is_prime</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">n</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="ow">and</span> <span class="nb">all</span><span class="p">(</span><span class="n">n</span> <span class="o">%</span> <span class="n">i</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">islice</span><span class="p">(</span><span class="n">count</span><span class="p">(</span><span class="mi">2</span><span class="p">),</span> <span class="nb">int</span><span class="p">(</span><span class="n">sqrt</span><span class="p">(</span><span class="n">n</span><span class="p">)</span><span class="o">-</span><span class="mi">1</span><span class="p">)))</span>
+</pre></div>
+</div>
+<p>Here’s how this operator result will look in the DeepCortex UI:</p>
+<img alt="../_images/simple_summary.png" src="../_images/simple_summary.png" />
+</div>
+<div class="section" id="tablesummary">
+<h2>TableSummary<a class="headerlink" href="#tablesummary" title="Permalink to this headline">¶</a></h2>
+<p><cite>TableSummary</cite> class accepts the following parameters in the constructor:</p>
+<ul class="simple">
+<li><p><strong>name</strong> with the name of the table.</p></li>
+<li><p><strong>columns</strong> with the list of <cite>TableSummaryColumn</cite> object that represents
+column names.</p></li>
+<li><p><strong>values</strong> with the list of list of primitive values (strings, integers,
+floats, booleans).</p></li>
+</ul>
+<p>For example:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">List</span>
+<span class="kn">from</span> <span class="nn">deepcortex.pipelines</span> <span class="kn">import</span> <span class="n">PipelineOperator</span><span class="p">,</span> <span class="n">publish</span>
+<span class="kn">from</span> <span class="nn">deepcortex.pipelines.operator_application_summary</span> <span class="kn">import</span> \
+    <span class="n">OperatorApplicationSummary</span><span class="p">,</span> <span class="n">TableSummary</span><span class="p">,</span> <span class="n">TableSummaryColumn</span>
+
+<span class="nd">@publish</span><span class="p">(</span><span class="s1">&#39;LabelsStatistics&#39;</span><span class="p">)</span>
+<span class="k">class</span> <span class="nc">LabelsStatisticsOperator</span><span class="p">(</span><span class="n">PipelineOperator</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">configure</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">pass</span>
+    <span class="k">def</span> <span class="nf">apply</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="kc">None</span><span class="p">]:</span>
+        <span class="c1"># Here we store results</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__data</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="p">[</span><span class="s2">&quot;cat&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mf">0.54</span><span class="p">],</span>
+            <span class="p">[</span><span class="s2">&quot;bird&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mf">0.221</span><span class="p">],</span>
+            <span class="p">[</span><span class="s2">&quot;ant&quot;</span><span class="p">,</span> <span class="mi">23</span><span class="p">,</span> <span class="mf">0.96</span><span class="p">],</span>
+        <span class="p">]</span>
+        <span class="k">return</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="k">def</span> <span class="nf">summary</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">OperatorApplicationSummary</span><span class="p">]:</span>
+        <span class="c1"># Prepare list of columns</span>
+        <span class="n">cols</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="n">TableSummaryColumn</span><span class="p">(</span><span class="s2">&quot;Label&quot;</span><span class="p">),</span>
+            <span class="n">TableSummaryColumn</span><span class="p">(</span><span class="s2">&quot;Count&quot;</span><span class="p">),</span>
+            <span class="n">TableSummaryColumn</span><span class="p">(</span><span class="s2">&quot;Factor&quot;</span><span class="p">),</span>
+        <span class="p">]</span>
+        <span class="c1"># Return confusion matrix</span>
+        <span class="k">return</span> <span class="p">[</span>
+            <span class="n">TableSummary</span><span class="p">(</span>
+                <span class="n">name</span><span class="o">=</span><span class="s2">&quot;Statistics&quot;</span><span class="p">,</span>
+                <span class="n">columns</span><span class="o">=</span><span class="n">cols</span><span class="p">,</span>
+                <span class="n">values</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">__data</span>
+            <span class="p">)</span>
+        <span class="p">]</span>
+</pre></div>
+</div>
+<p>Here’s how this operator result will look in the DeepCortex UI:</p>
+<img alt="../_images/table_summary.png" src="../_images/table_summary.png" />
+</div>
+<div class="section" id="confusionmatrix">
+<h2>ConfusionMatrix<a class="headerlink" href="#confusionmatrix" title="Permalink to this headline">¶</a></h2>
+<p>See <a class="reference external" href="https://en.wikipedia.org/wiki/Confusion_matrix">Confusion matrix page on wikipedia</a>
+for a detailed explanation of what this is.</p>
+<p><strong>ConfusionMatrix</strong> class accepts two parameters in the constructor:</p>
+<ul class="simple">
+<li><p><strong>confusion_matrix_cells</strong> with the list of <strong>ConfusionMatrixCell</strong> objects</p></li>
+<li><p><strong>labels</strong> with the list of labels</p></li>
+</ul>
+<p><strong>ConfusionMatrixCell</strong> class accepts the following parameters in the
+constructor:</p>
+<ul class="simple">
+<li><p><strong>value</strong> value of the confusion matrix cell</p></li>
+<li><p><strong>actual_label_index</strong> index of the label in the list of labels</p></li>
+<li><p><strong>predicted_label_index</strong> index of the cells row</p></li>
+</ul>
+<p>In order to calculate the confusion matrix itself, you can use, for example,
+the <a class="reference external" href="https://scikit-learn.org/stable/modules/generated/sklearn.metrics.confusion_matrix.html">sklearn.metrics.confusion_matrix</a>
+function of the <a class="reference external" href="https://scikit-learn.org/">skikit-learn</a> library.</p>
+<p>For example:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">List</span>
+<span class="kn">from</span> <span class="nn">itertools</span> <span class="kn">import</span> <span class="n">product</span>
+<span class="kn">from</span> <span class="nn">sklearn.metrics</span> <span class="kn">import</span> <span class="n">confusion_matrix</span>
+<span class="kn">from</span> <span class="nn">deepcortex.pipelines</span> <span class="kn">import</span> <span class="n">PipelineOperator</span><span class="p">,</span> <span class="n">publish</span>
+<span class="kn">from</span> <span class="nn">deepcortex.pipelines.operator_application_summary</span> <span class="kn">import</span> \
+    <span class="n">OperatorApplicationSummary</span><span class="p">,</span> <span class="n">ConfusionMatrix</span><span class="p">,</span> <span class="n">ConfusionMatrixCell</span>
+
+<span class="nd">@publish</span><span class="p">(</span><span class="s1">&#39;ConfusionMatrix&#39;</span><span class="p">)</span>
+<span class="k">class</span> <span class="nc">ConfusionMatrixOperator</span><span class="p">(</span><span class="n">PipelineOperator</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">configure</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">pass</span>
+    <span class="k">def</span> <span class="nf">apply</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="kc">None</span><span class="p">]:</span>
+        <span class="c1"># Here we store results</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__labels</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;ant&quot;</span><span class="p">,</span> <span class="s2">&quot;bird&quot;</span><span class="p">,</span> <span class="s2">&quot;cat&quot;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__y_true</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;cat&quot;</span><span class="p">,</span> <span class="s2">&quot;ant&quot;</span><span class="p">,</span> <span class="s2">&quot;cat&quot;</span><span class="p">,</span> <span class="s2">&quot;cat&quot;</span><span class="p">,</span> <span class="s2">&quot;ant&quot;</span><span class="p">,</span> <span class="s2">&quot;bird&quot;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__y_pred</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;ant&quot;</span><span class="p">,</span> <span class="s2">&quot;ant&quot;</span><span class="p">,</span> <span class="s2">&quot;cat&quot;</span><span class="p">,</span> <span class="s2">&quot;cat&quot;</span><span class="p">,</span> <span class="s2">&quot;ant&quot;</span><span class="p">,</span> <span class="s2">&quot;cat&quot;</span><span class="p">]</span>
+        <span class="k">return</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="k">def</span> <span class="nf">summary</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">OperatorApplicationSummary</span><span class="p">]:</span>
+        <span class="c1"># Calculate confusion matrix based on stored results</span>
+        <span class="n">cm_arr</span> <span class="o">=</span> <span class="n">confusion_matrix</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__y_true</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__y_pred</span><span class="p">,</span>
+            <span class="n">labels</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">__labels</span>
+        <span class="p">)</span>
+        <span class="c1"># Prepare cells of the confusion matrix summary</span>
+        <span class="n">cm_cells</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="n">ConfusionMatrixCell</span><span class="p">(</span>
+                <span class="n">value</span><span class="o">=</span><span class="n">cm_arr</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">],</span>
+                <span class="n">actual_label_index</span><span class="o">=</span><span class="n">i</span><span class="p">,</span>
+                <span class="n">predicted_label_index</span><span class="o">=</span><span class="n">j</span>
+            <span class="p">)</span>
+            <span class="k">for</span> <span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">)</span> <span class="ow">in</span> <span class="n">product</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__labels</span><span class="p">)),</span> <span class="n">repeat</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+        <span class="p">]</span>
+        <span class="c1"># Return confusion matrix</span>
+        <span class="k">return</span> <span class="p">[</span>
+            <span class="n">ConfusionMatrix</span><span class="p">(</span>
+                <span class="n">confusion_matrix_cells</span><span class="o">=</span><span class="n">cm_cells</span><span class="p">,</span>
+                <span class="n">labels</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">__labels</span>
+            <span class="p">)</span>
+        <span class="p">]</span>
+</pre></div>
+</div>
+<p>Here’s how this operator result will look in the DeepCortex UI:</p>
+<img alt="../_images/confusion_matrix.png" src="../_images/confusion_matrix.png" />
+</div>
+<div class="section" id="operator-enhancements">
+<span id="id3"></span><h2>5.4 Operator enhancements<a class="headerlink" href="#operator-enhancements" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="operator-enhancement-overview">
+<h2>Operator Enhancement Overview<a class="headerlink" href="#operator-enhancement-overview" title="Permalink to this headline">¶</a></h2>
+<p>By default, the DeepCortex UI automatically generates components for operator
+configuration when  editing a pipeline or executing an interactive experiment.</p>
+<p>It analyzes parameters of the operator and draws suitable UI component for
+each of the parameters.
+For example, if the parameter type is an integer type, the UI shows a text-box input
+that accepts only numbers. Or, if the parameter definition specifies a list of
+available values, the UI shows a dropdown that allows the user to select a value without
+entering them manually with a keyboard.</p>
+<p>But sometimes default components are not enough and the operator author wants more
+interactivity, or a better visual look’n’feel, or more complex validation logic
+on the UI side. In this case, the user can take advantage of operator
+enhancements.</p>
+<p>Operator enhancements components (aka custom components) are designed to improve
+the pipeline Canvas UI when working with custom operators.</p>
+<p>These enhancements should be <a class="reference external" href="https://angular.io/">Angular 2</a> components,
+because they will be embedded into the DeepCortex UI.</p>
+<p>Your <a class="reference internal" href="../dc-projects/index.html#what-are-dc-projects"><span class="std std-ref">4.2 What are DeepCortex (DC) Projects?</span></a> files tree should contain a directory with an Angular
+application. This application should have a module that provides a set of
+custom components.</p>
+<p>The template project for custom operator enhancements can be found in our
+repository:</p>
+<div class="fillme docutils container">
+<p>TODO <cite>link to github repo with sample code</cite>.</p>
+</div>
+<p>There are three types of custom components that can be embedded into
+the DeepCortex UI from the operator:</p>
+<ul class="simple">
+<li><p>Operator component</p></li>
+<li><p>Parameter component</p></li>
+<li><p>EDA component</p></li>
+</ul>
+<p>Each type of component takes a particular part of the operator popup in the UI.
+See the picture for more details:</p>
+<div class="figure align-default" id="id6">
+<img alt="../_images/component_placements.png" src="../_images/component_placements.png" />
+<p class="caption"><span class="caption-text">Placements for enhancement components in operator parameters popup in
+DeepCortex UI.</span><a class="headerlink" href="#id6" title="Permalink to this image">¶</a></p>
+<div class="legend">
+<p>The green box indicates -<a class="reference internal" href="#custom-component"><span class="std std-ref">5.4.3 Custom operator components</span></a>, the blue box
+indicates <a class="reference internal" href="#custom-eda-component"><span class="std std-ref">5.4.5 Custom EDA components</span></a> and the red boxes indicate
+places of <a class="reference internal" href="#custom-parameter-component"><span class="std std-ref">5.4.4 Custom parameter components</span></a></p>
+</div>
+</div>
+<p>During an interactive experiment,  all components have the ability to execute
+some python code (see <a class="reference internal" href="#inspections"><span class="std std-ref">5.4.6 Inspections</span></a> section) in order to receive data
+from the executing experiment.</p>
+</div>
+<div class="section" id="how-to-write-your-own-custom-component">
+<span id="how-to-write-custom-component"></span><h2>5.4.1 How to write your own custom component<a class="headerlink" href="#how-to-write-your-own-custom-component" title="Permalink to this headline">¶</a></h2>
+<p>A custom component is an Angular 2 component that implements a particular interface.
+For each type of component, the interface is slightly
+different. However, there are common methods for all components. Each component should
+implement at least two methods:</p>
+<ul class="simple">
+<li><p><strong>configure</strong> - accepts an optional object with options. The options
+can be configured on the python operator level with <cite>component_params</cite>; see
+<a class="reference internal" href="#how-to-specify-custom-component-in-operator"><span class="std std-ref">5.4.2 How to specify a custom component in the operator</span></a> section.</p></li>
+<li><p><strong>setContext</strong> - accepts an object with the context; see
+<cite>Context of custom component</cite> section with detailed explanation of context.</p></li>
+</ul>
+<p>In addition, <a class="reference internal" href="#custom-component"><span class="std std-ref">5.4.3 Custom operator components</span></a> should also have the following properties:</p>
+<ul class="simple">
+<li><p><strong>valuesChange</strong> with type <em>Observable&lt;ParameterValues&gt;</em>,</p></li>
+<li><p><strong>validityChange</strong> with type <em>Observable&lt;boolean&gt;</em>.</p></li>
+<li><p><a class="reference internal" href="#custom-parameter-component"><span class="std std-ref">5.4.4 Custom parameter components</span></a> should have the following property:</p></li>
+<li><p><strong>valueChange</strong> with type <strong>Observable&lt;ParameterValue&gt;</strong>.</p></li>
+</ul>
+</div>
+<div class="section" id="context-of-custom-component">
+<h2>Context of custom component<a class="headerlink" href="#context-of-custom-component" title="Permalink to this headline">¶</a></h2>
+<p>Context is a JavaScript object that contains the following properties:</p>
+<ul class="simple">
+<li><p><strong>operator</strong> with information about operator.</p></li>
+<li><p><strong>parameterValues</strong> with an object containing names and values of the operator
+parameters.</p></li>
+<li><p><strong>inputs</strong> with an object containing names and information of the inputs
+connected to the current step.</p></li>
+<li><p><strong>stepId</strong> with id of the current step.</p></li>
+<li><p><strong>invoker</strong> function that calls inspections, see <a class="reference internal" href="#inspections"><span class="std std-ref">5.4.6 Inspections</span></a>
+section for more details.</p></li>
+</ul>
+</div>
+<div class="section" id="example-of-custom-component">
+<h2>Example of custom component<a class="headerlink" href="#example-of-custom-component" title="Permalink to this headline">¶</a></h2>
+<p>As an example let’s make a component that allows a user to set up an integer parameter
+in a more comfortable way with a mouse instead of entering it manually.</p>
+<p>Note: File names are fictional file names that reflect an approximate location of
+the file.</p>
+<p>File <strong>ui/src/components/integer-number.component.ts</strong>:</p>
+<p>Also we should export this component in the angular module with a particular name:</p>
+<p>File <strong>ui/src/components.module.ts</strong>:</p>
+</div>
+<div class="section" id="how-to-specify-a-custom-component-in-the-operator">
+<span id="how-to-specify-custom-component-in-operator"></span><h2>5.4.2 How to specify a custom component in the operator<a class="headerlink" href="#how-to-specify-a-custom-component-in-the-operator" title="Permalink to this headline">¶</a></h2>
+<p>In order to specify a custom component, an operator author should use the
+<cite>CustomComponentReference.for_location</cite> helper function.</p>
+<p>This helper accepts 2 positional parameters and one named optional parameter:</p>
+<ul class="simple">
+<li><p><strong>module_location</strong> - directory in the <a class="reference internal" href="../dc-projects/index.html#what-are-dc-operators"><span class="std std-ref">4.1 What are DeepCortex (DC) Operators?</span></a> files tree where Angular
+application with custom components is located.</p></li>
+<li><p><strong>component name</strong> - the name of the component as specified in the definition
+of the angular module that provides component.</p></li>
+<li><p><strong>component_params</strong> - optional named parameter that specifies dict with
+options for the UI component. It allows configuring a generic-component (or any
+component that allows configuration) for usage with a particular operator.</p></li>
+</ul>
+</div>
+<div class="section" id="custom-operator-components">
+<span id="custom-component"></span><h2>5.4.3 Custom operator components<a class="headerlink" href="#custom-operator-components" title="Permalink to this headline">¶</a></h2>
+<p>This enhancement should include the UI for configuring all operator’s parameters.
+If it is specified for the operator, the Deepcortex UI will not render any
+generic-component for operator parameters or EDA-components. Instead, it
+renders only custom operator components and other components specified for this
+operator (<a class="reference internal" href="#custom-parameter-component"><span class="std std-ref">5.4.4 Custom parameter components</span></a> and <a class="reference internal" href="#custom-eda-component"><span class="std std-ref">5.4.5 Custom EDA components</span></a>) will be
+ignored.</p>
+<p>Custom operator components can be specified via the <cite>custom_component</cite> parameter
+of the <a class="reference internal" href="#publish-decorator"><span class="std std-ref">5.2 &#64;publish decorator</span></a> like this:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Tuple</span>
+<span class="kn">from</span> <span class="nn">deepcortex.pipelines</span> <span class="kn">import</span> <span class="n">PipelineOperator</span><span class="p">,</span> <span class="n">publish</span><span class="p">,</span> <span class="n">CustomComponentReference</span>
+
+<span class="nd">@publish</span><span class="p">(</span>
+    <span class="n">name</span><span class="o">=</span><span class="s1">&#39;MyOperator&#39;</span><span class="p">,</span>
+    <span class="n">custom_component</span><span class="o">=</span><span class="n">CustomComponentReference</span><span class="o">.</span><span class="n">for_location</span><span class="p">(</span>
+        <span class="s1">&#39;path_to_ui_project_directory&#39;</span><span class="p">,</span>  <span class="c1"># path to the angular project inside your DC Project</span>
+        <span class="s1">&#39;component-identifier&#39;</span><span class="p">,</span>  <span class="c1"># angular provider identifier</span>
+        <span class="n">component_params</span><span class="o">=</span><span class="p">{}</span>  <span class="c1"># dict with parameters for UI component,</span>
+                             <span class="c1"># this dict will be passed to configure call</span>
+                             <span class="c1"># on displaying component in the DeepCortex UI</span>
+    <span class="p">)</span>
+<span class="p">)</span>
+<span class="k">class</span> <span class="nc">MyOperator</span><span class="p">(</span><span class="n">PipelineOperator</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">apply</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">input</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">]:</span>
+        <span class="k">return</span>
+    <span class="k">def</span> <span class="nf">configure</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">pass</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="custom-parameter-components">
+<span id="custom-parameter-component"></span><h2>5.4.4 Custom parameter components<a class="headerlink" href="#custom-parameter-components" title="Permalink to this headline">¶</a></h2>
+<p>This enhancement replaces control of a single parameter in the
+auto-generated operator parameters form in the operator popup.
+The purpose of this component is to improve visualization of the particular
+parameter of the operator.</p>
+<p>In order to use it we should specify it via the <cite>custom_component</cite> parameter inside
+the parameter configuration of the <a class="reference internal" href="#publish-decorator"><span class="std std-ref">5.2 &#64;publish decorator</span></a> using the
+<cite>CustomComponentReference.for_location</cite> helper</p>
+<p>For example, let’s specify our <cite>comfy-integer-number-input</cite> component from the
+<a class="reference internal" href="#how-to-write-custom-component"><span class="std std-ref">5.4.1 How to write your own custom component</span></a> section in the operator:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Tuple</span>
+<span class="kn">from</span> <span class="nn">deepcortex.pipelines</span> <span class="kn">import</span> <span class="n">PipelineOperator</span><span class="p">,</span> <span class="n">publish</span><span class="p">,</span> <span class="n">CustomComponentReference</span>
+
+<span class="nd">@publish</span><span class="p">(</span>
+    <span class="n">name</span><span class="o">=</span><span class="s1">&#39;pow(x)&#39;</span><span class="p">,</span>
+    <span class="n">parameters</span><span class="o">=</span><span class="p">{</span>
+        <span class="s1">&#39;pow&#39;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s1">&#39;description: &#39;</span><span class="n">Raises</span> <span class="n">the</span> <span class="n">number</span> <span class="n">to</span> <span class="n">the</span> <span class="n">power</span><span class="o">.</span> <span class="n">Power</span> <span class="n">could</span> <span class="n">be</span> <span class="n">specified</span><span class="o">.</span><span class="s1">&#39;,</span>
+            <span class="s1">&#39;custom_component&#39;</span><span class="p">:</span> <span class="n">CustomComponentReference</span><span class="o">.</span><span class="n">for_location</span><span class="p">(</span>
+                <span class="s1">&#39;ui&#39;</span><span class="p">,</span>  <span class="c1"># assume that our Angular project located in this subdirectory</span>
+                <span class="s1">&#39;comfy-integer-number-input&#39;</span><span class="p">,</span>  <span class="c1"># name as specified in module</span>
+                <span class="s1">&#39;component_params&#39;</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;step&#39;</span><span class="p">:</span> <span class="mi">2</span><span class="p">}</span>  <span class="c1"># Since our component accepts</span>
+                                                <span class="c1"># &#39;step&#39; option, we can set it up</span>
+            <span class="p">)</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+<span class="p">)</span>
+<span class="k">class</span> <span class="nc">PowerNumberOperator</span><span class="p">(</span><span class="n">PipelineOperator</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">apply</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="n">x</span> <span class="o">**</span> <span class="bp">self</span><span class="o">.</span><span class="n">__pow</span>
+    <span class="k">def</span> <span class="nf">configure</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">pow</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__pow</span> <span class="o">=</span> <span class="nb">pow</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="custom-eda-components">
+<span id="custom-eda-component"></span><h2>5.4.5 Custom EDA components<a class="headerlink" href="#custom-eda-components" title="Permalink to this headline">¶</a></h2>
+<p>This enhancement will be appended to the bottom of the auto-generated operator
+parameters form in the operator popup.</p>
+<p>EDA components can be useful to inspect inputs and outputs of the operator
+during an interactive experiment.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Tuple</span>
+<span class="kn">from</span> <span class="nn">deepcortex.pipelines</span> <span class="kn">import</span> <span class="n">PipelineOperator</span><span class="p">,</span> <span class="n">publish</span><span class="p">,</span> <span class="n">CustomComponentReference</span>
+
+<span class="nd">@publish</span><span class="p">(</span>
+    <span class="n">name</span><span class="o">=</span><span class="s1">&#39;MyOperator&#39;</span><span class="p">,</span>
+    <span class="n">custom_eda_components</span><span class="o">=</span><span class="p">[</span>
+        <span class="n">CustomComponentReference</span><span class="o">.</span><span class="n">for_location</span><span class="p">(</span>
+            <span class="s1">&#39;path_to_ui_project_directory&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;component-identifier&#39;</span><span class="p">,</span>
+            <span class="n">component_params</span><span class="o">=</span><span class="p">{}</span>
+        <span class="p">)</span>
+    <span class="p">]</span>
+<span class="p">)</span>
+<span class="k">class</span> <span class="nc">MyOperator</span><span class="p">(</span><span class="n">PipelineOperator</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">apply</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">input</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">]:</span>
+        <span class="k">return</span>
+    <span class="k">def</span> <span class="nf">configure</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">pass</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="inspections">
+<span id="id4"></span><h2>5.4.6 Inspections<a class="headerlink" href="#inspections" title="Permalink to this headline">¶</a></h2>
+<p>If a component is invoked in the interactive experiment mode, it has the ability
+to call a python function and get its result if it is serializable into JSON.</p>
+<p>This operation is called an inspection because there is a possibility to pass
+the desired output of the executed pipeline step to the target python function
+in order to analyze it.</p>
+<p>In order to make a python function available for invoking from the typescript
+custom component, you need to perform the following steps:</p>
+<ul>
+<li><p>Create a python function in your <a class="reference internal" href="../dc-projects/index.html#what-are-dc-operators"><span class="std std-ref">4.1 What are DeepCortex (DC) Operators?</span></a>, for example</p>
+<blockquote>
+<div><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">List</span>
+
+<span class="k">def</span> <span class="nf">example_inspection_function</span><span class="p">(</span><span class="n">x</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">]:</span>
+    <span class="k">return</span> <span class="n">x</span> <span class="o">*</span> <span class="n">x</span><span class="p">,</span>
+</pre></div>
+</div>
+</div></blockquote>
+</li>
+<li><p>In the operator <cite>&#64;publish decorator</cite> you need to specify the parameter
+<cite>inspections</cite> and provide a name for your inspection like this:</p>
+<blockquote>
+<div><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">my_package.my_function_module</span> <span class="kn">import</span> <span class="n">example_inspection_function</span>
+<span class="nd">@publish</span><span class="p">(</span>
+    <span class="n">name</span><span class="o">=</span><span class="s1">&#39;MyOperator&#39;</span><span class="p">,</span>
+    <span class="n">inspections</span><span class="o">=</span><span class="p">{</span>
+        <span class="s1">&#39;square_the_number&#39;</span><span class="p">:</span> <span class="n">example_inspection_function</span>
+    <span class="p">},</span>
+    <span class="n">custom_eda_components</span><span class="o">=</span><span class="p">[</span>
+        <span class="c1"># This is our component that going to invoke inspection</span>
+        <span class="n">CustomComponentReference</span><span class="o">.</span><span class="n">for_location</span><span class="p">(</span>
+            <span class="s1">&#39;path_to_ui_project_directory&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;my-eda-component&#39;</span>
+        <span class="p">)</span>
+    <span class="p">]</span>
+<span class="p">)</span>
+<span class="k">class</span> <span class="nc">MyOperator</span><span class="p">(</span><span class="n">PipelineOperator</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">apply</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">input</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">]:</span>
+        <span class="k">return</span>
+    <span class="k">def</span> <span class="nf">configure</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">pass</span>
+</pre></div>
+</div>
+</div></blockquote>
+</li>
+<li><p>Now, in the custom component code you may use the <cite>invoker</cite> property of the context
+in order to call the inspection by name, for example:</p>
+<blockquote>
+<div><div class="highlight-ts notranslate"><div class="highlight"><pre><span></span><span class="kr">export</span> <span class="kr">class</span> <span class="nx">MyEDAComponent</span> <span class="kr">implements</span> <span class="nx">CustomComponent</span><span class="p">.</span><span class="nx">IEDAComponent</span> <span class="p">{</span>
+    <span class="kr">private</span> <span class="nx">context</span>: <span class="kt">CustomComponent.IEDAContext</span><span class="p">;</span>
+    <span class="kr">public</span> <span class="nx">configure</span><span class="p">(</span><span class="nx">options</span><span class="o">?:</span> <span class="p">{</span> <span class="p">[</span><span class="nx">p</span>: <span class="kt">string</span><span class="p">]</span><span class="o">:</span> <span class="nx">any</span> <span class="p">})</span> <span class="p">{}</span>
+    <span class="kr">public</span> <span class="nx">setContext</span><span class="p">(</span><span class="nx">context</span>: <span class="kt">CustomComponent.IEDAContext</span><span class="p">)</span><span class="o">:</span> <span class="k">void</span> <span class="p">{</span>
+        <span class="cm">/*</span>
+<span class="cm">         * Here we accept context object and put in it component property</span>
+<span class="cm">         * in order to use it later.</span>
+<span class="cm">         */</span>
+        <span class="k">this</span><span class="p">.</span><span class="nx">context</span> <span class="o">=</span> <span class="nx">context</span><span class="p">;</span>
+    <span class="p">}</span>
+    <span class="kr">private</span> <span class="nx">_onButtonClick() {</span>
+        <span class="cm">/*</span>
+<span class="cm">         * This function will be the handler for a button click.</span>
+<span class="cm">         * Here we are going to invoke a python function and show</span>
+<span class="cm">         * the results to the user.</span>
+<span class="cm">         */</span>
+        <span class="k">if</span> <span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="nx">context</span><span class="p">.</span><span class="nx">invoker</span><span class="p">)</span> <span class="p">{</span>
+            <span class="cm">/*</span>
+<span class="cm">             * Get invoker from context and call it with 3 arguments:</span>
+<span class="cm">             * - inspection name,</span>
+<span class="cm">             * - pipeline stepId,</span>
+<span class="cm">             * - object with parameters for inspection</span>
+<span class="cm">             */</span>
+            <span class="k">this</span><span class="p">.</span><span class="nx">context</span><span class="p">.</span><span class="nx">invoker</span><span class="p">(</span>
+                <span class="s1">&#39;square_the_number&#39;</span><span class="p">,</span>  <span class="c1">// this is inspection name</span>
+                <span class="k">this</span><span class="p">.</span><span class="nx">context</span><span class="p">.</span><span class="nx">stepId</span><span class="p">,</span>  <span class="c1">// pipeline step ID</span>
+                <span class="p">{</span><span class="nx">x</span>: <span class="kt">5</span><span class="p">}</span> <span class="c1">// parameters for the inspection function</span>
+            <span class="p">).</span><span class="nx">subscribe</span><span class="p">(</span><span class="nx">res</span> <span class="o">=&gt;</span> <span class="p">{</span>
+                <span class="nx">alert</span><span class="p">(</span><span class="s1">&#39;Result of the inspection is: &#39;</span> <span class="o">+</span> <span class="nx">res</span><span class="p">);</span>
+            <span class="p">})</span>
+        <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+            <span class="nx">alert</span><span class="p">(</span><span class="s1">&#39;Not in interactive mode&#39;</span><span class="p">);</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</div></blockquote>
+</li>
+</ul>
+<p>However, it will be more useful if we dont’ pass static data to the inspection,
+but rather a result from the executed step of the interactive experiment.</p>
+<p>In this example, we make an inspection that analyses a table and returns
+a list of column names.</p>
+<p>Here’s how our inspection function will look:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">List</span>
+<span class="kn">from</span> <span class="nn">deepcortex.library.tables</span> <span class="kn">import</span> <span class="n">Table</span>
+
+<span class="k">def</span> <span class="nf">get_table_column_names</span><span class="p">(</span><span class="n">table</span><span class="p">:</span> <span class="n">Table</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+    <span class="n">column_names</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">if</span> <span class="n">table</span><span class="o">.</span><span class="n">columns</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">column</span> <span class="ow">in</span> <span class="n">table</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
+            <span class="n">column_names</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">column</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">column_names</span>
+</pre></div>
+</div>
+<p>Now let’s make a UI component that gets a list of column names and
+puts them on the screen.</p>
+<p>Not let’s put them into our operator:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Tuple</span>
+<span class="kn">from</span> <span class="nn">deepcortex.library.tables</span> <span class="kn">import</span> <span class="n">Table</span>
+<span class="kn">from</span> <span class="nn">deepcortex.pipelines</span> <span class="kn">import</span> <span class="n">PipelineOperator</span><span class="p">,</span> <span class="n">publish</span><span class="p">,</span> <span class="n">CustomComponentReference</span>
+<span class="kn">from</span> <span class="nn">my_package.my_function_module</span> <span class="kn">import</span> <span class="n">get_table_column_names</span>
+
+<span class="nd">@publish</span><span class="p">(</span>
+    <span class="n">name</span><span class="o">=</span><span class="s1">&#39;MyTableOperator&#39;</span><span class="p">,</span>
+    <span class="n">inspections</span><span class="o">=</span><span class="p">{</span>
+        <span class="s1">&#39;get_column_names&#39;</span><span class="p">:</span> <span class="n">get_table_column_names</span>
+    <span class="p">},</span>
+    <span class="n">custom_eda_components</span><span class="o">=</span><span class="p">[</span>
+        <span class="c1"># This is our component that&#39;s going to invoke inspection</span>
+        <span class="n">CustomComponentReference</span><span class="o">.</span><span class="n">for_location</span><span class="p">(</span>
+            <span class="s1">&#39;path_to_ui_project_directory&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;show-columns-component&#39;</span>
+        <span class="p">)</span>
+    <span class="p">]</span>
+<span class="p">)</span>
+<span class="k">class</span> <span class="nc">MyOperator</span><span class="p">(</span><span class="n">PipelineOperator</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">apply</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">table</span><span class="p">:</span> <span class="n">Table</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Table</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="n">table</span>
+    <span class="k">def</span> <span class="nf">configure</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">pass</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="builtin-operator-enhancements">
+<span id="builtin-enhacement"></span><h2>5.4.7 Builtin operator enhancements<a class="headerlink" href="#builtin-operator-enhancements" title="Permalink to this headline">¶</a></h2>
+<p>DeepCortex has a set of ready-to-use enhancements that the user can use in their operators. An example of such an enhancement is deatailed below:</p>
+</div>
+<div class="section" id="tabular-charting">
+<span id="id5"></span><h2>5.4.7.1 Tabular charting<a class="headerlink" href="#tabular-charting" title="Permalink to this headline">¶</a></h2>
+<p>Tabular charting is an operator enhancement that allows inspecting operator Table-typed
+inputs/outputs and perform some exploratory data analysis on the table data.</p>
+<p>It should allow the user to:</p>
+<ul class="simple">
+<li><p>see input and output table(s) (with column names) and allow them to browse
+their content with sorting and pagination.</p></li>
+<li><p>perform exploratory data analysis on input and output tables e.g.,
+create a variety of charts.</p></li>
+</ul>
+</div>
+<div class="section" id="how-to-use-it">
+<h2>How to use it<a class="headerlink" href="#how-to-use-it" title="Permalink to this headline">¶</a></h2>
+<p>In order to apply this enhancement to your operator you need to import
+<cite>tabular_eda_component</cite> from <cite>from deepcortex.tabular.charting</cite> and use it in
+the -:ref: <cite>custom_EDA_component</cite> parameter of -:ref: <cite>publish_decorator</cite>.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">deepcortex.library.tables</span> <span class="kn">import</span> <span class="n">Table</span>
+<span class="kn">from</span> <span class="nn">deepcortex.pipelines</span> <span class="kn">import</span> <span class="n">PipelineOperator</span><span class="p">,</span> <span class="n">publish</span>
+<span class="kn">from</span> <span class="nn">deepcortex.tabular.charting</span> <span class="kn">import</span> <span class="n">tabular_eda_component</span>
+
+<span class="nd">@publish</span><span class="p">({</span>
+    <span class="n">name</span><span class="o">=</span><span class="s1">&#39;My operator&#39;</span><span class="p">,</span>
+    <span class="n">custom_eda_components</span> <span class="o">=</span> <span class="p">[</span><span class="n">tabular_eda_component</span><span class="p">]</span>
+<span class="p">})</span>
+<span class="k">class</span> <span class="nc">MyOperator</span><span class="p">():</span>
+    <span class="k">def</span> <span class="nf">apply</span><span class="p">:(</span><span class="bp">self</span><span class="p">,</span> <span class="n">input_table</span><span class="p">:</span> <span class="n">Table</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Table</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="n">input_table</span>
+    <span class="k">def</span> <span class="nf">configure</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">pass</span>
+</pre></div>
+</div>
+<p>In the example above, the <cite>tabular_eda_component</cite> will be attached to
+all input and output tables of the operator.</p>
+<p>If you want to inspect only a particular input/output, you can provide parameters
+using the <cite>configure</cite> method.</p>
+<p>You should pass a dictionary with a key <cite>attachTo</cite>
+and a value that is a list of dictionaries to the <cite>configure</cite> method.
+Each underlying dictionary should be one of the following:</p>
+<ul class="simple">
+<li><p>has key <cite>inputName</cite> with the name of the operator’s input you want to
+inspect as a value.</p></li>
+<li><p>has key  <cite>outputIndex</cite> with the index of the desired output.</p></li>
+</ul>
+<p>For example:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">deepcortex.library.tables</span> <span class="kn">import</span> <span class="n">Table</span>
+<span class="kn">from</span> <span class="nn">deepcortex.pipelines</span> <span class="kn">import</span> <span class="n">PipelineOperator</span><span class="p">,</span> <span class="n">publish</span>
+<span class="kn">from</span> <span class="nn">deepcortex.tabular.charting</span> <span class="kn">import</span> <span class="n">tabular_eda_component</span>
+
+<span class="nd">@publish</span><span class="p">({</span>
+    <span class="n">name</span><span class="o">=</span><span class="s1">&#39;My operator&#39;</span><span class="p">,</span>
+    <span class="n">custom_eda_components</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="n">tabular_eda_component</span><span class="o">.</span><span class="n">configure</span><span class="p">({</span>
+            <span class="c1"># Despite the fact the operator has 2 input tables and 2 output</span>
+            <span class="c1"># tables, we want to only inspect the input table named &#39;second&#39;</span>
+            <span class="c1"># and the first output table (with index 0 in the output tuple).</span>
+            <span class="n">attachTo</span><span class="p">:</span> <span class="p">[</span>
+                <span class="p">{</span> <span class="s1">&#39;inputName&#39;</span><span class="p">:</span> <span class="s1">&#39;second&#39;</span> <span class="p">},</span>
+                <span class="p">{</span> <span class="s1">&#39;outputIndex&#39;</span><span class="p">:</span> <span class="mi">0</span> <span class="p">},</span>
+            <span class="p">]</span>
+        <span class="p">})</span>
+    <span class="p">]</span>
+<span class="p">})</span>
+<span class="k">class</span> <span class="nc">MyOperator</span><span class="p">():</span>
+    <span class="c1">#</span>
+    <span class="c1"># This operator has two input tables: &#39;first&#39; and &#39;second and two output</span>
+    <span class="c1"># tables with indecies 0 and 1.</span>
+    <span class="c1">#</span>
+    <span class="k">def</span> <span class="nf">apply</span><span class="p">:(</span><span class="bp">self</span><span class="p">,</span> <span class="n">first</span><span class="p">:</span> <span class="n">Table</span><span class="p">,</span> <span class="n">second</span><span class="p">:</span> <span class="n">Table</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Table</span><span class="p">,</span> <span class="n">Table</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="p">(</span><span class="n">input_table</span><span class="p">,</span> <span class="n">input_table</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">configure</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">pass</span>
+</pre></div>
+</div>
+<p>In the example above, the table charting component will inspect only the input
+table named <cite>‘second’</cite> and the first output table.</p>
+</div>
+<div class="section" id="how-it-looks">
+<h2>How it looks<a class="headerlink" href="#how-it-looks" title="Permalink to this headline">¶</a></h2>
+<p>By default, the component is “disabled”. It shows only tabs for each
+attached input/output and the button “Inspect …”.</p>
+<img alt="../_images/tabular_charting_inspect_button.png" src="../_images/tabular_charting_inspect_button.png" />
+<p>In order to enable EDA, the user should click the “Inspect…” button.</p>
+<p>Once the component is enabled it starts loading table columns and table contents.</p>
+<img alt="../_images/tabular_charting.png" src="../_images/tabular_charting.png" />
+<p>The enabled component contains two parts:</p>
+<ul>
+<li><p><strong>Table view.</strong> This is a simple table-browser.</p></li>
+<li><p><strong>Charting.</strong> This section is collapsed by default and the user has to click
+on the checkbox in order to expand charting options.
+Once expanded, it displays three columns:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>In the left column, the user can select metrics and attributes.</p></li>
+<li><p>The middle column allows the user to select a chart type (in Basics tab),
+set up some additional configuration options depending on the
+selected chart type (in Options tab), and define some value groups
+(in Grouping tab).</p></li>
+<li><p>Aggregation results are visualised by the selected chart type.
+The user can expand the chart to make it wider. In this case, the middle
+column hides and the chart becomes wider.</p></li>
+</ul>
+</div></blockquote>
+</li>
+</ul>
+<p>Next: <a class="reference internal" href="../models/index.html#models"><span class="std std-ref">6. Working with ML Models</span></a></p>
+</div>
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../index.html">user-manual</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2020, Abheek Sambyal.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.0.3</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="../_sources/operators/index.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

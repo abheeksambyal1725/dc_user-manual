@@ -1,0 +1,225 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>3. Pipelines &#8212; user-manual  documentation</title>
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <script src="../_static/language_data.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <p>Previous: <a class="reference internal" href="../library/index.html#dc-assets"><span class="std std-ref">2. DeepCortex (DS) Assets</span></a></p>
+<div class="section" id="pipelines">
+<span id="id1"></span><h1>3. Pipelines<a class="headerlink" href="#pipelines" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="what-are-deepcortex-dc-pipelines">
+<span id="what-are-pipelines"></span><h2>3.1. What are DeepCortex (DC) Pipelines?<a class="headerlink" href="#what-are-deepcortex-dc-pipelines" title="Permalink to this headline">¶</a></h2>
+<p>DeepCortex Pipeline is 1 or more DC Operators stitched together to perform a set of tasks
+either sequentially or in a task-parallel manner based on the construed DAG (Directed Acyclic Graph).
+In DeepCortex, the Pipelines are created from either the Compose Module (Canvas), or from the Code Moule (IDE).</p>
+</div>
+<div class="section" id="how-to-construct-pipelines-in-deepcortex">
+<span id="how-to-construct-pipelines"></span><h2>3.2 How to construct Pipelines in DeepCortex?<a class="headerlink" href="#how-to-construct-pipelines-in-deepcortex" title="Permalink to this headline">¶</a></h2>
+<p>In DeepCortex, users can construct/compose pipelines using 1 of 2 methods:</p>
+</div>
+<div class="section" id="a-from-compose-canvas">
+<h2>a. From Compose/ Canvas<a class="headerlink" href="#a-from-compose-canvas" title="Permalink to this headline">¶</a></h2>
+<p>To construct a new pipeline from canvas, click on the “Create Pipeline” button as shown in the screenshot below.</p>
+<div class="figure align-default">
+<img alt="../_images/create.png" src="../_images/create.png" />
+</div>
+<p>Once a new pipeline is constructed, user can start pulling the operators from the drop down in the left panel,
+onto the main pipeline canvas. The operators in the left panel are organized by “Operator Categories”.
+User can click on any Operator Category to see the list of Operators under the selected Category.
+The number depicted next to each Operator category represents the count of unique operators in that category.
+The user can also use the search feature to search for an operator by name.
+Below screenshot shows the list of Operators under the Operator Category “Transformers”.</p>
+<div class="figure align-default">
+<img alt="../_images/transformers_category.png" src="../_images/transformers_category.png" />
+</div>
+<p>As shown in the below screenshot, users can find more information about the Operators
+(version, description, expected inputs, expected outputs, configuration parameters) by clicking on the info
+icon shown next to the operator name or by clicking on the icon on the operator interface
+when user drags the operator on to the canvas.</p>
+<div class="figure align-default">
+<img alt="../_images/operator_info.png" src="../_images/operator_info.png" />
+</div>
+<p>To use an Operator in the pipeline, drag the operator from the left panel onto the main Canvas workspace.
+Every Operator in DeepCortex will have 3 components (as shown in the below screenshot):</p>
+<div class="figure align-default">
+<img alt="../_images/canvas_with_operators.png" src="../_images/canvas_with_operators.png" />
+</div>
+<ol class="arabic simple">
+<li><dl class="simple">
+<dt>one or more Input(s) – to connect to upstream operators</dt><dd><ol class="loweralpha simple">
+<li><p>input(s) marked in red is a “required” input(s)</p></li>
+<li><p>input(s) marked in blue are “optional” input(s)</p></li>
+</ol>
+</dd>
+</dl>
+</li>
+<li><p>one or more Output(s) – to connect to downstream operators</p></li>
+<li><dl class="simple">
+<dt>control options – to control/view various options for the operators</dt><dd><ol class="loweralpha simple">
+<li><p>information: provides additional information about operator (version, input definition, output definition, parameter definition)</p></li>
+<li><p>configuration parameter: allows users to view/edit default configuration parameters for the operator</p></li>
+<li><p>delete: remove operator from canvas</p></li>
+</ol>
+</dd>
+</dl>
+</li>
+</ol>
+<p>To learn more about Configuring the parameters of an operator, please refer to <a class="reference internal" href="#how-to-configure-operators-in-pipelines"><span class="std std-ref">3.3 How to configure Operators in a Pipeline?</span></a> section.</p>
+<p>Operators can be connected to each other by following the below steps:</p>
+<ol class="arabic simple">
+<li><p>Click on the output node of the Operator you want to connect from</p></li>
+<li><p>Holding down the mouse button, drag your mouse to one of the input nodes of the Operator you want to connect to.
+This will create a “connector” between the two operators as shown in the below screenshot.</p></li>
+<li><p>Release the mouse button, after the connector reaches the input node of downstream operator</p></li>
+</ol>
+<div class="figure align-default">
+<img alt="../_images/connecting_operators.png" src="../_images/connecting_operators.png" />
+</div>
+</div>
+<div class="section" id="b-from-code-using-notebooks">
+<h2>b. From Code (using Notebooks)<a class="headerlink" href="#b-from-code-using-notebooks" title="Permalink to this headline">¶</a></h2>
+<div class="fillme docutils container">
+<p>TODO: add description</p>
+</div>
+</div>
+<div class="section" id="going-from-code-view-of-pipeline-to-visual-pipeline">
+<h2>Going from Code view of Pipeline to Visual Pipeline<a class="headerlink" href="#going-from-code-view-of-pipeline-to-visual-pipeline" title="Permalink to this headline">¶</a></h2>
+<div class="fillme docutils container">
+<p>TODO: add description</p>
+</div>
+</div>
+<div class="section" id="how-to-configure-operators-in-a-pipeline">
+<span id="how-to-configure-operators-in-pipelines"></span><h2>3.3 How to configure Operators in a Pipeline?<a class="headerlink" href="#how-to-configure-operators-in-a-pipeline" title="Permalink to this headline">¶</a></h2>
+<p>Clicking the operator configuration control on the Operator icon brings up the configuration pop-up,
+which allows users to view/modify any of the operator’s configuration parameters.
+The below screenshot shows the configuration pop-up for an example operator.
+For additional information on the configuration parameters, users can also hover over the (?) icon next
+to each parameter name in the pop-up.</p>
+<div class="figure align-default">
+<img alt="../_images/operator_parameters.png" src="../_images/operator_parameters.png" />
+</div>
+</div>
+<div class="section" id="how-to-execute-pipelines-in-deepcortex-lab-module">
+<span id="how-to-execute-pipelines"></span><h2>3.4 How to execute Pipelines in DeepCortex (Lab Module)?<a class="headerlink" href="#how-to-execute-pipelines-in-deepcortex-lab-module" title="Permalink to this headline">¶</a></h2>
+<p>In DeepCortex, pipelines can be executed in 1 of 2 modes:</p>
+</div>
+<div class="section" id="a-non-interactive-mode">
+<h2>a. Non-Interactive Mode<a class="headerlink" href="#a-non-interactive-mode" title="Permalink to this headline">¶</a></h2>
+<p>In this mode, the entire pipeline is executed as a single job.
+To run the pipeline, user has to click the “RUN” button on the top panel, as shown in the below screenshot.</p>
+<div class="figure align-default">
+<img alt="../_images/run_pipeline.png" src="../_images/run_pipeline.png" />
+</div>
+</div>
+<div class="section" id="b-interactive-mode">
+<h2>b. Interactive Mode<a class="headerlink" href="#b-interactive-mode" title="Permalink to this headline">¶</a></h2>
+<p>In this mode, the user can pick and choose which operator(s) should be executed and
+only those are executed as a single job. When a user chooses to execute a single operator,
+all the upstream operators that are directly or indirectly connected to the selected operator will also get executed.</p>
+<div class="fillme docutils container">
+<p>TODO: add a section that shows “Best Practice Approach for Model Building: Rapid Experimentation”</p>
+</div>
+<p>Each pipeline that is Run/executed in DeepCortex (either in Interactive or Non-Interactive mode) results
+in a new asset type called “Experiment”.</p>
+<p>All Experiments (Running, Completed, Cancelled) can be viewed in the “LAB” module of DeepCortex.
+Once an Experiment completes, user can see the results of the Experiment by clicking on the “Results” module
+of the Experiment in the main panel. User can also refer to the “Pipeline” that was executed as part of
+the Experiment by clicking the “Pipeline” module for the Experiment. Below screenshots shows the Pipeline
+and Results module for a sample Experiment that completed successfully.</p>
+<div class="figure align-default">
+<img alt="../_images/results.png" src="../_images/results.png" />
+</div>
+<p>Next: <a class="reference internal" href="../dc-projects/index.html#dc-operators"><span class="std std-ref">4. DeepCortex (DC) Operators</span></a></p>
+</div>
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../index.html">user-manual</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2020, Abheek Sambyal.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.0.3</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="../_sources/pipelines/index.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

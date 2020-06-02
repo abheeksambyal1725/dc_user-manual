@@ -1,0 +1,131 @@
+Previous: :ref:`pipelines`
+
+
+.. _dc_operators:
+
+############################
+4. DeepCortex (DC) Operators
+############################
+
+.. _what_are_dc_operators:
+
+4.1 What are DeepCortex (DC) Operators?
+=======================================
+
+Operators in DeepCortex are the building blocks of Pipelines.
+Operators are essentially functions designed to accept specific input(s), execute a specific set of instructions,
+and generate specific output(s). These functions (set of instructions) when wrapped inside DeepCortex’s DSL become
+an Operator that can be then used to construct a pipeline in DeepCortex. 
+DeepCortex ships out with a repository of different Operators. In addition, users can also build their own custom Operators, as specified in :ref:`design_operators` section.
+
+.. _what_are_dc_projects:
+
+4.2 What are DeepCortex (DC) Projects?
+======================================
+
+DC Projects are essential to creating Operators in DeepCortex. They are a collection of 1 or more Operator code that must meet the following requirements before
+the Operators can be Build or Published:
+
+1. Have a requirements.txt file: The project should have a “requirements.txt” file in the root of the project.
+   This file is used to list down all required custom python packages that need to be installed as a pre-requisite
+   for the Operators. These required packages should be either publicly available or another existing DC project
+   package.
+   Below screenshot shows a sample requirements.txt file
+
+.. figure:: images/requirements_txt.png
+
+2. Have at least one python module (`_init_.py`):
+   The project should have at least 1 python module (folder with `__init__.py` file) in the root of the project.
+   If not, the build process will fail with the error “The project has no modules to package”
+   .Note: user can create multiple python modules along with the base module or within it.
+   Below screenshot shows the use of _init_ python file that is required in ALL the folders that include the
+   operator code inside.
+
+3. Operator Code wrapped inside DeepCortex DSL: for more details on DeepCortex DSL refer to :ref:`DSL` section.
+
+Build & Publish
+===============
+
+**Build** option checks the operator(s) within a DC project for ...???.. and makes the operator(s) available
+for the user to use in their pipelines via IDE or Canvas.
+To learn more about developing Pipelines, refer “How to Create Pipelines” section.
+
+The below screenshot shows the “Build” option in DeepCortex.
+
+.. figure:: images/build.png
+
+**Publish** option allows users to not only Build the Operator package,
+but also assign the Operators to predefined Operator Categories and makes it available to not
+just package owner but also to all the other users of DeepCortex.
+Once Published, the Operators are now available to all users to use in their pipelines via IDE or Canvas.
+To learn more about developing Pipeline, refer “How to Create Pipelines” section.
+The below screenshots show the “Publish” option in DeepCortex and the process of assigning Operators to specific Operator Category.
+
+.. figure:: images/publish.png
+
+.. _how_to_create_operators:
+
+4.3 How to create Operators in DeepCortex?
+==========================================
+
+Creating an Operator inside DeepCortex is a 3 step process:
+
+Step 1: Create a DC Project or Edit existing DC Project as shown in the below screenshot.
+
+.. figure:: images/create_project.png
+
+Step 2: Add/Edit the Operator(s) code inside DC projects and organize it based on the specific requirements.
+
+Step 3a: “Build” or “Publish” Project that contains the Operator code resulting in a Package
+
+Step 3b: “Build” or “Publish” existing published/build Project.
+
+Operator authors can view previously Build or Published DC projects by going to the PACKAGE LIST.
+Clicking individual Published/Build package will also show the list of Operators that are part of the selected package,
+as shown in the below screenshot. Users can modify existing operator code and re-Build or re-Publish
+the project to update their existing Operators, OR add new operators from existing projects, by following step 3a.
+
+.. figure:: images/view_build_package.png
+
+.. _how_to_use_operators:
+
+4.4 How to use Operators in DeepCortex?
+=======================================
+
+Operators are used in the construction of DC asset Pipelines. For more information on how to construct Pipelines,
+please refer to the :ref:`pipelines` section.
+
+.. _what_are_package_repositories:
+
+4.5 DC Packages Repository
+==========================
+
+After **publishing** a DC Project its package can be installed like any python package. To do so, you need to:
+
+- have a DeepCortex account
+- know a DeepCortex URL
+- **[recommended]** use a *virtual environment* while working with `dclib`.
+- customize your **pip.conf** to point to a DeepCortex repository:
+
+.. code:: bash
+
+    $ pip config set install.extra-index-url \
+        "http[s]://<username>:<password>@<deepcortex_host>:<deepcortex_port>/\
+        baile/v2.0/packages-index/"
+
+If you have a custom DeepCortex installation and DeepCortex host does not have valid or any HTTPS:
+
+.. code:: bash
+
+    $ pip config set install.trusted-host "<deepcortex_host>:<deepcortex_port>"
+
+Then to install a published package use:
+
+.. code:: bash
+
+    $ pip install <package_name>[==<package_version>]
+
+
+
+
+Next: :ref:`design_operators`
